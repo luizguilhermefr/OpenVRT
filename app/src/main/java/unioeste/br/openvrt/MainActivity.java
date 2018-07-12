@@ -5,7 +5,6 @@ import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -14,10 +13,10 @@ public class MainActivity extends AppCompatActivity {
 
     private Integer selectedMeasurement = 0;
 
-    private AlertDialog.Builder measurementDialogBuilder = null;
+    private AlertDialog measurementDialog = null;
 
     private void createMeasurementDialog() {
-        measurementDialogBuilder = new AlertDialog.Builder(this);
+        AlertDialog.Builder measurementDialogBuilder = new AlertDialog.Builder(this);
         measurementDialogBuilder.setTitle("yo");
         measurementDialogBuilder.setSingleChoiceItems(R.array.measurements, 0, new DialogInterface.OnClickListener() {
             @Override
@@ -37,20 +36,19 @@ public class MainActivity extends AppCompatActivity {
                 //
             }
         });
+        measurementDialog = measurementDialogBuilder.create();
     }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
         createMeasurementDialog();
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                measurementDialogBuilder.create();
+                measurementDialog.show();
             }
         });
     }
