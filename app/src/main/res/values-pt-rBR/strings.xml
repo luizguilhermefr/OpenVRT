@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="open_to_start">Abra um mapa de prescrição para iniciar</string>
+    <string name="action_settings">Configurações</string>
+    <string name="rate_measurement">Medida de aplicação</string>
+    <string name="liters_per_hectare">Litros por hectare</string>
+    <string name="kgs_per_hectare">Quilos por hectare</string>
+    <string name="ok">OK</string>
+    <string name="cancel">Cancelar</string>
+</resources>

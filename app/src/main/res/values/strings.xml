@@ -1,9 +1,10 @@
 <resources>
-    <string name="app_name">OpenVRT</string>
+    <string name="app_name" translatable="false">OpenVRT</string>
     <string name="open_to_start">Open a prescription map to start</string>
     <string name="action_settings">Settings</string>
+    <string name="rate_measurement">Rate measurement</string>
     <string name="liters_per_hectare">Liters per hectare</string>
-    <string name="kgs_per_hectare">Kg\'s per hectare</string>
+    <string name="kgs_per_hectare">Kilograms per hectare</string>
     <string name="ok">OK</string>
     <string name="cancel">Cancel</string>
 </resources>
