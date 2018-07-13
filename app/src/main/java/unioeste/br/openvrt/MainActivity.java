@@ -1,14 +1,26 @@
 package unioeste.br.openvrt;
 
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.widget.ProgressBar;
+import unioeste.br.openvrt.file.ShapeFinder;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
 public class MainActivity extends AppCompatActivity {
 
     private Integer selectedMeasurement = 0;
+
+    private FloatingActionButton floatingActionButton = null;
+
+    private AlertDialog fileSeekSpinnerDialog = null;
+
+    private ArrayList<File> availableFiles = null;
 
     private AlertDialog createMeasurementDialog() {
         AlertDialog.Builder measurementDialogBuilder = new AlertDialog.Builder(this);
@@ -34,11 +46,37 @@ public class MainActivity extends AppCompatActivity {
         return spinnerDialogBuilder.create();
     }
 
+    private void seekForFiles() {
+        File startingPoint = Environment.getExternalStorageDirectory();
+        Future<ArrayList<File>> futureAvailableFiles = new ShapeFinder(startingPoint).find();
+        Thread waiter = new Thread(() -> {
+            try {
+                while (!futureAvailableFiles.isDone() && !futureAvailableFiles.isCancelled()) {
+                    Thread.sleep(300);
+                }
+                availableFiles = futureAvailableFiles.get();
+            } catch (InterruptedException | ExecutionException e) {
+                fileSeekSpinnerDialog.cancel();
+            }
+        });
+        waiter.start();
+    }
+
+    private FloatingActionButton createFloatingActionButton() {
+        FloatingActionButton fab = findViewById(R.id.fab);
+        fab.setOnClickListener((view) -> {
+            AlertDialog dialog = createSpinnerDialog();
+            fileSeekSpinnerDialog.show();
+            seekForFiles();
+        });
+        return fab;
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        FloatingActionButton fab = findViewById(R.id.fab);
-        fab.setOnClickListener(view -> createSpinnerDialog().show());
+        floatingActionButton = createFloatingActionButton();
+        fileSeekSpinnerDialog = createSpinnerDialog();
     }
 }
