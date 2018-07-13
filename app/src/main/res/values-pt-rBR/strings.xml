@@ -7,4 +7,5 @@
     <string name="kgs_per_hectare">Quilos por hectare</string>
     <string name="ok">OK</string>
     <string name="cancel">Cancelar</string>
+    <string name="scanning_maps">Procurando mapas</string>
 </resources>
