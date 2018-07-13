@@ -10,8 +10,9 @@
     android:gravity="center">
 
     <ProgressBar
-        android:layout_width="26sp"
+        android:layout_width="48sp"
         android:layout_height="26sp"
-        android:visibility="visible" />
+        android:visibility="visible"
+        android:layout_margin="10sp" />
 
 </RelativeLayout>

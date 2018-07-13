@@ -26,6 +26,7 @@ public class ShapeFinder {
         File[] listFile = startPoint.listFiles();
         if (listFile != null) {
             for (File file : listFile) {
+                System.out.println(file.getAbsolutePath());
                 if (file.isDirectory()) {
                     walkDir(file);
                 } else if (file.getName().endsWith(PATTERN)) {
