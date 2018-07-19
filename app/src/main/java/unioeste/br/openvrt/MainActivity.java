@@ -26,8 +26,6 @@ public class MainActivity extends AppCompatActivity {
 
     private AlertDialog fileSeekSpinnerDialog = null;
 
-    private ArrayList<File> availableFiles = null;
-
     private Thread shapeFinderThread = null;
 
     private AlertDialog createMeasurementDialog() {
@@ -66,11 +64,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void onAvailableFilesLoaded(ArrayList<File> files) {
-        availableFiles = files;
         fileSeekSpinnerDialog.cancel();
-        System.out.println("Files loaded");
-        System.out.println(files);
-        System.out.println("end");
     }
 
     @NonNull
