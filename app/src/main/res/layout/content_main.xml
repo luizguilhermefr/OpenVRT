@@ -9,12 +9,7 @@
     tools:context="unioeste.br.openvrt.MainActivity"
     android:orientation="vertical"
     android:layout_gravity="center_vertical"
-    android:gravity="center">
-
-    <fragment
-        android:name="unioeste.br.openvrt.EmptyStateFragment"
-        android:id="@+id/empty_state"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+    android:gravity="center"
+    android:id="@+id/fragment_container">
 
 </LinearLayout>

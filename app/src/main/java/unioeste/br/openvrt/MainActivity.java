@@ -7,6 +7,9 @@ import android.os.Environment;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -107,10 +110,19 @@ public class MainActivity extends AppCompatActivity {
         scanForFiles();
     }
 
+    private void createEmptyState() {
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        Fragment emptyStateFragment = new EmptyStateFragment();
+        fragmentTransaction.replace(R.id.fragment_container, EmptyStateFragment.newInstance());
+        fragmentTransaction.commit();
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        createEmptyState();
         floatingActionButton = createFloatingActionButton();
         fileSeekSpinnerDialog = createSpinnerDialog();
     }
