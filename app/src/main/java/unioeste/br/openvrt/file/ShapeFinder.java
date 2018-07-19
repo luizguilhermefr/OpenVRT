@@ -2,24 +2,31 @@ package unioeste.br.openvrt.file;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 
-public class ShapeFinder {
+public class ShapeFinder implements Runnable {
 
     private File startDir;
 
-    private final static String PATTERN = ".shp";
+    private final static String[] PATTERNS = {".json", ".geojson"};
 
     private ArrayList<File> matches;
 
-    private ExecutorService executor = Executors.newSingleThreadExecutor();
+    private ShapeFinderCallback callback;
 
-    public ShapeFinder(File startDir) {
+    public ShapeFinder(File startDir, ShapeFinderCallback callback) {
         this.startDir = startDir;
+        this.callback = callback;
         this.matches = new ArrayList<>();
+    }
+
+    private Boolean fileMatches(File file) {
+        for (String pattern : PATTERNS) {
+            if (file.getName().endsWith(pattern)) {
+                return Boolean.TRUE;
+            }
+        }
+
+        return Boolean.FALSE;
     }
 
     private void walkDir(File startPoint) {
@@ -29,17 +36,16 @@ public class ShapeFinder {
                 System.out.println(file.getAbsolutePath());
                 if (file.isDirectory()) {
                     walkDir(file);
-                } else if (file.getName().endsWith(PATTERN)) {
+                } else if (fileMatches(file)) {
                     matches.add(file);
                 }
             }
         }
     }
 
-    public Future<ArrayList<File>> find() {
-        return executor.submit(() -> {
-            walkDir(startDir);
-            return matches;
-        });
+    @Override
+    public void run() {
+        walkDir(startDir);
+        callback.onShapesFound(matches);
     }
 }

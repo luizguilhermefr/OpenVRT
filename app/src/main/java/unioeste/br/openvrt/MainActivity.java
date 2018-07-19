@@ -10,12 +10,11 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+
 import unioeste.br.openvrt.file.ShapeFinder;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -27,7 +26,9 @@ public class MainActivity extends AppCompatActivity {
 
     private AlertDialog fileSeekSpinnerDialog = null;
 
-    Future<ArrayList<File>> futureAvailableFiles = null;
+    private ArrayList<File> availableFiles = null;
+
+    private Thread shapeFinderThread = null;
 
     private AlertDialog createMeasurementDialog() {
         AlertDialog.Builder measurementDialogBuilder = new AlertDialog.Builder(this);
@@ -47,30 +48,32 @@ public class MainActivity extends AppCompatActivity {
         AlertDialog.Builder spinnerDialogBuilder = new AlertDialog.Builder(this);
         spinnerDialogBuilder.setTitle(R.string.scanning_maps);
         spinnerDialogBuilder.setView(R.layout.progress_dialog);
-        spinnerDialogBuilder.setNegativeButton(R.string.cancel, (dialog, id) -> {
-            if (futureAvailableFiles != null && !futureAvailableFiles.isDone() && !futureAvailableFiles.isCancelled()) {
-                futureAvailableFiles.cancel(true);
-            }
-        });
+        spinnerDialogBuilder.setNegativeButton(R.string.cancel, (dialog, id) -> stopScanningFiles());
         return spinnerDialogBuilder.create();
     }
 
-    private void seekForFiles() {
-        File startingPoint = Environment.getExternalStorageDirectory();
-        futureAvailableFiles = new ShapeFinder(startingPoint).find();
-        Thread waiter = new Thread(() -> {
-            try {
-                while (!futureAvailableFiles.isDone() && !futureAvailableFiles.isCancelled()) {
-                    Thread.sleep(300);
-                }
-            } catch (InterruptedException ignored) {
-                //
-            }
-            fileSeekSpinnerDialog.cancel();
-        });
-        waiter.start();
+    private void stopScanningFiles() {
+        if (shapeFinderThread != null && shapeFinderThread.isAlive() && !shapeFinderThread.isInterrupted()) {
+            shapeFinderThread.interrupt();
+        }
     }
 
+    private void scanForFiles() {
+        File startingPoint = Environment.getExternalStorageDirectory();
+        ShapeFinder shapeFinder = new ShapeFinder(startingPoint, this::onAvailableFilesLoaded);
+        shapeFinderThread = new Thread(shapeFinder);
+        shapeFinderThread.start();
+    }
+
+    private void onAvailableFilesLoaded(ArrayList<File> files) {
+        availableFiles = files;
+        fileSeekSpinnerDialog.cancel();
+        System.out.println("Files loaded");
+        System.out.println(files);
+        System.out.println("end");
+    }
+
+    @NonNull
     private Boolean hasPermissionToReadFiles() {
         return ContextCompat.checkSelfPermission(this,
                 Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED;
@@ -107,7 +110,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void showSpinnerAndStartScanningFiles() {
         fileSeekSpinnerDialog.show();
-        seekForFiles();
+        scanForFiles();
     }
 
     @Override
