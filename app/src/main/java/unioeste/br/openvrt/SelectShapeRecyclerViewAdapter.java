@@ -7,16 +7,15 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import java.io.File;
-import java.util.List;
+import java.util.ArrayList;
 
-public class MyShapeRecyclerViewAdapter extends RecyclerView.Adapter<MyShapeRecyclerViewAdapter.ViewHolder> {
+public class SelectShapeRecyclerViewAdapter extends RecyclerView.Adapter<SelectShapeRecyclerViewAdapter.ViewHolder> {
 
-    private final List<File> mValues;
+    private final ArrayList<String> mValues;
 
-    private final ShapeFragment.ShapeListFragmentInteractionListener mListener;
+    private final SelectShapeFragment.ShapeListFragmentInteractionListener mListener;
 
-    MyShapeRecyclerViewAdapter(List<File> items, ShapeFragment.ShapeListFragmentInteractionListener listener) {
+    SelectShapeRecyclerViewAdapter(ArrayList<String> items, SelectShapeFragment.ShapeListFragmentInteractionListener listener) {
         mValues = items;
         mListener = listener;
     }
@@ -25,15 +24,14 @@ public class MyShapeRecyclerViewAdapter extends RecyclerView.Adapter<MyShapeRecy
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.fragment_shape, parent, false);
+                .inflate(R.layout.fragment_shape_item, parent, false);
         return new ViewHolder(view);
     }
 
     @Override
     public void onBindViewHolder(@NonNull final ViewHolder holder, int position) {
         holder.mItem = mValues.get(position);
-        holder.mPathView.setText(mValues.get(position).getAbsolutePath());
-        holder.mNameView.setText(mValues.get(position).getName());
+        holder.mNameView.setText(mValues.get(position));
         holder.mView.setOnClickListener(v -> {
             if (mListener != null) {
                 mListener.onShapeListFragmentInteraction(holder.mItem);
@@ -49,16 +47,13 @@ public class MyShapeRecyclerViewAdapter extends RecyclerView.Adapter<MyShapeRecy
     public class ViewHolder extends RecyclerView.ViewHolder {
         final View mView;
 
-        final TextView mPathView;
-
         final TextView mNameView;
 
-        File mItem;
+        String mItem;
 
         ViewHolder(View view) {
             super(view);
             mView = view;
-            mPathView = view.findViewById(R.id.item_number);
             mNameView = view.findViewById(R.id.content);
         }
 

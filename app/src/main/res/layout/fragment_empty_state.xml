@@ -5,7 +5,8 @@
     tools:context="unioeste.br.openvrt.EmptyStateFragment"
     android:orientation="vertical"
     android:layout_gravity="center_vertical"
-    android:gravity="center">
+    android:gravity="center"
+    android:id="@+id/empty_state">
 
     <TextView
         android:layout_width="wrap_content"

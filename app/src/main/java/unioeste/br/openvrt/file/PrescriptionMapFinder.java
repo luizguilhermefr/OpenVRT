@@ -3,17 +3,17 @@ package unioeste.br.openvrt.file;
 import java.io.File;
 import java.util.ArrayList;
 
-public class ShapeFinder implements Runnable {
+public class PrescriptionMapFinder implements Runnable {
 
     private File startDir;
 
     private final static String[] PATTERNS = {".json", ".geojson"};
 
-    private ArrayList<File> matches;
+    private ArrayList<String> matches;
 
-    private ShapeFinderCallback callback;
+    private PrescriptionMapFinderCallback callback;
 
-    public ShapeFinder(File startDir, ShapeFinderCallback callback) {
+    public PrescriptionMapFinder(File startDir, PrescriptionMapFinderCallback callback) {
         this.startDir = startDir;
         this.callback = callback;
         this.matches = new ArrayList<>();
@@ -33,11 +33,10 @@ public class ShapeFinder implements Runnable {
         File[] listFile = startPoint.listFiles();
         if (listFile != null) {
             for (File file : listFile) {
-                System.out.println(file.getAbsolutePath());
                 if (file.isDirectory()) {
                     walkDir(file);
                 } else if (fileMatches(file)) {
-                    matches.add(file);
+                    matches.add(file.getAbsolutePath());
                 }
             }
         }
@@ -46,6 +45,6 @@ public class ShapeFinder implements Runnable {
     @Override
     public void run() {
         walkDir(startDir);
-        callback.onShapesFound(matches);
+        callback.onPrescriptionMapsFound(matches);
     }
 }

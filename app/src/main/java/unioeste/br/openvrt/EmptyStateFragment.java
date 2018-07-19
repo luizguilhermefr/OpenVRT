@@ -14,6 +14,7 @@ public class EmptyStateFragment extends Fragment {
     }
 
 
+    @NonNull
     public static EmptyStateFragment newInstance() {
         return new EmptyStateFragment();
     }

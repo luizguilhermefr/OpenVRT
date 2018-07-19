@@ -10,23 +10,26 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import java.io.File;
-import java.util.List;
+import java.util.ArrayList;
 
-public class ShapeFragment extends Fragment {
+public class SelectShapeFragment extends Fragment {
 
     private ShapeListFragmentInteractionListener mListener;
 
-    public List<File> files;
+    private ArrayList<String> files;
 
-    public ShapeFragment() {
+    public SelectShapeFragment() {
         //
     }
 
     @NonNull
-    @SuppressWarnings("unused")
-    public static ShapeFragment newInstance() {
-        return new ShapeFragment();
+    static SelectShapeFragment newInstance(ArrayList<String> files) {
+        SelectShapeFragment selectShapeFragment = new SelectShapeFragment();
+        Bundle args = new Bundle();
+        args.putStringArrayList("files", files);
+        selectShapeFragment.setArguments(args);
+
+        return selectShapeFragment;
     }
 
     @Override
@@ -39,9 +42,11 @@ public class ShapeFragment extends Fragment {
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_shape_list, container, false);
         Context context = view.getContext();
+        Bundle args = getArguments();
+        files = args != null ? args.getStringArrayList("files") : new ArrayList<>();
         RecyclerView recyclerView = (RecyclerView) view;
         recyclerView.setLayoutManager(new LinearLayoutManager(context));
-        recyclerView.setAdapter(new MyShapeRecyclerViewAdapter(files, mListener));
+        recyclerView.setAdapter(new SelectShapeRecyclerViewAdapter(files, mListener));
 
         return view;
     }
@@ -60,6 +65,6 @@ public class ShapeFragment extends Fragment {
     }
 
     public interface ShapeListFragmentInteractionListener {
-        void onShapeListFragmentInteraction(File item);
+        void onShapeListFragmentInteraction(String item);
     }
 }

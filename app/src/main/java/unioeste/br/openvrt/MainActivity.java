@@ -7,25 +7,21 @@ import android.os.Environment;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 
-import unioeste.br.openvrt.file.ShapeFinder;
+import unioeste.br.openvrt.file.PrescriptionMapFinder;
 
 import java.io.File;
 import java.util.ArrayList;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements SelectShapeFragment.ShapeListFragmentInteractionListener {
 
     private static final int PERMISSION_READ_EXTERNAL_DIR = 1;
 
     private Integer selectedMeasurement = 0;
-
-    private FloatingActionButton floatingActionButton = null;
 
     private AlertDialog fileSeekSpinnerDialog = null;
 
@@ -61,13 +57,14 @@ public class MainActivity extends AppCompatActivity {
 
     private void scanForFiles() {
         File startingPoint = Environment.getExternalStorageDirectory();
-        ShapeFinder shapeFinder = new ShapeFinder(startingPoint, this::onAvailableFilesLoaded);
+        PrescriptionMapFinder shapeFinder = new PrescriptionMapFinder(startingPoint, this::onAvailableFilesLoaded);
         shapeFinderThread = new Thread(shapeFinder);
         shapeFinderThread.start();
     }
 
-    private void onAvailableFilesLoaded(ArrayList<File> files) {
+    private void onAvailableFilesLoaded(ArrayList<String> files) {
         fileSeekSpinnerDialog.cancel();
+        toFilesListFragment(files);
     }
 
     @NonNull
@@ -93,7 +90,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private FloatingActionButton createFloatingActionButton() {
+    private void createFloatingActionButton() {
         FloatingActionButton fab = findViewById(R.id.fab);
         fab.setOnClickListener((view) -> {
             if (hasPermissionToReadFiles()) {
@@ -102,7 +99,6 @@ public class MainActivity extends AppCompatActivity {
                 askPermissionToReadFiles();
             }
         });
-        return fab;
     }
 
     private void showSpinnerAndStartScanningFiles() {
@@ -110,11 +106,15 @@ public class MainActivity extends AppCompatActivity {
         scanForFiles();
     }
 
-    private void createEmptyState() {
-        FragmentManager fragmentManager = getSupportFragmentManager();
-        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-        Fragment emptyStateFragment = new EmptyStateFragment();
+    private void toEmptyStateFragment() {
+        FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
         fragmentTransaction.replace(R.id.fragment_container, EmptyStateFragment.newInstance());
+        fragmentTransaction.commit();
+    }
+
+    private void toFilesListFragment(ArrayList<String> files) {
+        FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
+        fragmentTransaction.replace(R.id.fragment_container, SelectShapeFragment.newInstance(files));
         fragmentTransaction.commit();
     }
 
@@ -122,8 +122,13 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        createEmptyState();
-        floatingActionButton = createFloatingActionButton();
+        toEmptyStateFragment();
+        createFloatingActionButton();
         fileSeekSpinnerDialog = createSpinnerDialog();
+    }
+
+    @Override
+    public void onShapeListFragmentInteraction(String item) {
+        System.out.println(item);
     }
 }
