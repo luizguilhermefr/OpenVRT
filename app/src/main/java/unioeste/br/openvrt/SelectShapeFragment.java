@@ -16,8 +16,6 @@ public class SelectShapeFragment extends Fragment {
 
     private ShapeListFragmentInteractionListener mListener;
 
-    private ArrayList<String> files;
-
     public SelectShapeFragment() {
         //
     }
@@ -43,14 +41,13 @@ public class SelectShapeFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_shape_list, container, false);
         Context context = view.getContext();
         Bundle args = getArguments();
-        files = args != null ? args.getStringArrayList("files") : new ArrayList<>();
+        ArrayList<String> files = args != null ? args.getStringArrayList("files") : new ArrayList<>();
         RecyclerView recyclerView = (RecyclerView) view;
         recyclerView.setLayoutManager(new LinearLayoutManager(context));
         recyclerView.setAdapter(new SelectShapeRecyclerViewAdapter(files, mListener));
 
         return view;
     }
-
 
     @Override
     public void onAttach(Context context) {

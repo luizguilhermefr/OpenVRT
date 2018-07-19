@@ -54,7 +54,7 @@ public class SelectShapeRecyclerViewAdapter extends RecyclerView.Adapter<SelectS
         ViewHolder(View view) {
             super(view);
             mView = view;
-            mNameView = view.findViewById(R.id.content);
+            mNameView = view.findViewById(R.id.shape_list_item);
         }
 
         @Override

@@ -21,6 +21,8 @@ public class MainActivity extends AppCompatActivity implements SelectShapeFragme
 
     private static final int PERMISSION_READ_EXTERNAL_DIR = 1;
 
+    private FloatingActionButton fab = null;
+
     private Integer selectedMeasurement = 0;
 
     private AlertDialog fileSeekSpinnerDialog = null;
@@ -90,7 +92,7 @@ public class MainActivity extends AppCompatActivity implements SelectShapeFragme
         }
     }
 
-    private void createFloatingActionButton() {
+    private FloatingActionButton createFloatingActionButton() {
         FloatingActionButton fab = findViewById(R.id.fab);
         fab.setOnClickListener((view) -> {
             if (hasPermissionToReadFiles()) {
@@ -99,6 +101,8 @@ public class MainActivity extends AppCompatActivity implements SelectShapeFragme
                 askPermissionToReadFiles();
             }
         });
+
+        return fab;
     }
 
     private void showSpinnerAndStartScanningFiles() {
@@ -107,23 +111,29 @@ public class MainActivity extends AppCompatActivity implements SelectShapeFragme
     }
 
     private void toEmptyStateFragment() {
+        makeFloatingActionButtonVisible(true);
         FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
         fragmentTransaction.replace(R.id.fragment_container, EmptyStateFragment.newInstance());
         fragmentTransaction.commit();
     }
 
     private void toFilesListFragment(ArrayList<String> files) {
+        makeFloatingActionButtonVisible(false);
         FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
         fragmentTransaction.replace(R.id.fragment_container, SelectShapeFragment.newInstance(files));
         fragmentTransaction.commit();
+    }
+
+    private void makeFloatingActionButtonVisible(Boolean visible) {
+        runOnUiThread(() -> fab.setVisibility(visible ? FloatingActionButton.VISIBLE : FloatingActionButton.INVISIBLE));
     }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        fab = createFloatingActionButton();
         toEmptyStateFragment();
-        createFloatingActionButton();
         fileSeekSpinnerDialog = createSpinnerDialog();
     }
 
