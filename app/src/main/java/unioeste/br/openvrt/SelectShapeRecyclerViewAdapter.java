@@ -31,7 +31,9 @@ public class SelectShapeRecyclerViewAdapter extends RecyclerView.Adapter<SelectS
     @Override
     public void onBindViewHolder(@NonNull final ViewHolder holder, int position) {
         holder.mItem = mValues.get(position);
+
         holder.mNameView.setText(mValues.get(position));
+
         holder.mView.setOnClickListener(v -> {
             if (mListener != null) {
                 mListener.onShapeListFragmentInteraction(holder.mItem);
