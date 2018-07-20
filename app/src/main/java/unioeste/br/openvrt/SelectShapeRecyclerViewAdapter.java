@@ -41,8 +41,8 @@ public class SelectShapeRecyclerViewAdapter extends RecyclerView.Adapter<SelectS
         });
     }
 
-    public void add( int position, String item) {
-        mValues.add(position, item);
+    public void add(String item) {
+        mValues.add(item);
     }
 
     @Override

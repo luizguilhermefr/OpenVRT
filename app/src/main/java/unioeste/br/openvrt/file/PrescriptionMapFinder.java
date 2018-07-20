@@ -40,6 +40,7 @@ public class PrescriptionMapFinder implements Runnable {
 
     @Override
     public void run() {
+        callback.onSearchStarted();
         walkDir(startDir);
         callback.onSearchEnded();
     }

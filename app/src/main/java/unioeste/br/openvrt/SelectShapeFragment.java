@@ -6,9 +6,11 @@ import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -28,9 +30,9 @@ public class SelectShapeFragment extends Fragment {
 
     private SelectShapeRecyclerViewAdapter mAdapter;
 
-    private Thread shapeFinderThread = null;
+    private SwipeRefreshLayout swiper = null;
 
-    private int currentItem = 0;
+    private Thread shapeFinderThread = null;
 
     public SelectShapeFragment() {
         //
@@ -52,17 +54,31 @@ public class SelectShapeFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_shape_list, container, false);
         Context context = view.getContext();
         mAdapter = new SelectShapeRecyclerViewAdapter(new ArrayList<>(), mListener);
-        RecyclerView recyclerView = (RecyclerView) view;
+        RecyclerView recyclerView = view.findViewById(R.id.shape_list);
         recyclerView.setLayoutManager(new LinearLayoutManager(context));
         recyclerView.setAdapter(mAdapter);
 
+        return view;
+    }
+
+    @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        makeSwiper();
+        scanOrAskPermissions();
+    }
+
+    private void scanOrAskPermissions() {
         if (hasPermissionToReadFiles()) {
             scanForFiles();
         } else {
             askPermissionToReadFiles();
         }
+    }
 
-        return view;
+    private void makeSwiper() {
+        swiper = getView().findViewById(R.id.shape_list_swiper);
+        swiper.setOnRefreshListener(this::scanOrAskPermissions);
     }
 
     @Override
@@ -114,17 +130,23 @@ public class SelectShapeFragment extends Fragment {
         File startingPoint = Environment.getExternalStorageDirectory();
         PrescriptionMapFinder shapeFinder = new PrescriptionMapFinder(startingPoint, new PrescriptionMapFinderCallback() {
             @Override
+            public void onSearchStarted() {
+                getActivity().runOnUiThread(() -> {
+                    swiper.setRefreshing(true);
+                });
+            }
+
+            @Override
             public void onSearchEnded() {
-                //
+                getActivity().runOnUiThread(() -> {
+                    swiper.setRefreshing(false);
+                });
             }
 
             @Override
             public void onShapeDiscovered(String file) {
-                mAdapter.add(currentItem, file);
-                getActivity().runOnUiThread(() -> {
-                    mAdapter.notifyItemInserted(currentItem);
-                    currentItem++;
-                });
+                mAdapter.add(file);
+                getActivity().runOnUiThread(() -> mAdapter.notifyDataSetChanged());
             }
         });
         shapeFinderThread = new Thread(shapeFinder);
