@@ -45,6 +45,10 @@ public class SelectShapeRecyclerViewAdapter extends RecyclerView.Adapter<SelectS
         mValues.add(item);
     }
 
+    public void clear() {
+        mValues.clear();
+    }
+
     @Override
     public int getItemCount() {
         return mValues.size();

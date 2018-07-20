@@ -131,7 +131,9 @@ public class SelectShapeFragment extends Fragment {
         PrescriptionMapFinder shapeFinder = new PrescriptionMapFinder(startingPoint, new PrescriptionMapFinderCallback() {
             @Override
             public void onSearchStarted() {
+                mAdapter.clear();
                 getActivity().runOnUiThread(() -> {
+                    mAdapter.notifyDataSetChanged();
                     swiper.setRefreshing(true);
                 });
             }
