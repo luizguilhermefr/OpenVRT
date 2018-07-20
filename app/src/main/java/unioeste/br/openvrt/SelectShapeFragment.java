@@ -30,6 +30,8 @@ public class SelectShapeFragment extends Fragment {
 
     private Thread shapeFinderThread = null;
 
+    private int currentItem = 0;
+
     public SelectShapeFragment() {
         //
     }
@@ -118,6 +120,11 @@ public class SelectShapeFragment extends Fragment {
 
             @Override
             public void onShapeDiscovered(String file) {
+                mAdapter.add(currentItem, file);
+                getActivity().runOnUiThread(() -> {
+                    mAdapter.notifyItemInserted(currentItem);
+                    currentItem++;
+                });
             }
         });
         shapeFinderThread = new Thread(shapeFinder);
