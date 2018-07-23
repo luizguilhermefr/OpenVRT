@@ -15,9 +15,9 @@ import android.view.ViewGroup;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Objects;
 
 import unioeste.br.openvrt.file.PrescriptionMapFinder;
-import unioeste.br.openvrt.file.PrescriptionMapFinderCallback;
 
 public class SelectShapeFragment extends Fragment {
 
@@ -92,28 +92,18 @@ public class SelectShapeFragment extends Fragment {
 
     private void scanForFiles() {
         File startingPoint = Environment.getExternalStorageDirectory();
-        PrescriptionMapFinder shapeFinder = new PrescriptionMapFinder(startingPoint, new PrescriptionMapFinderCallback() {
-            @Override
-            public void onSearchStarted() {
-                mAdapter.clear();
-                getActivity().runOnUiThread(() -> {
-                    mAdapter.notifyDataSetChanged();
-                    swiper.setRefreshing(true);
-                });
-            }
-
-            @Override
-            public void onSearchEnded() {
-                getActivity().runOnUiThread(() -> {
-                    swiper.setRefreshing(false);
-                });
-            }
-
-            @Override
-            public void onShapeDiscovered(String file) {
-                mAdapter.add(file);
-                getActivity().runOnUiThread(() -> mAdapter.notifyDataSetChanged());
-            }
+        PrescriptionMapFinder shapeFinder = new PrescriptionMapFinder(startingPoint);
+        shapeFinder.setOnSearchStartedListener(() -> {
+            mAdapter.clear();
+            Objects.requireNonNull(getActivity()).runOnUiThread(() -> {
+                mAdapter.notifyDataSetChanged();
+                swiper.setRefreshing(true);
+            });
+        });
+        shapeFinder.setOnSearchEndedListener(() -> Objects.requireNonNull(getActivity()).runOnUiThread(() -> swiper.setRefreshing(false)));
+        shapeFinder.setOnShapeDiscoveredListener(file -> {
+            mAdapter.add(file);
+            Objects.requireNonNull(getActivity()).runOnUiThread(() -> mAdapter.notifyDataSetChanged());
         });
         shapeFinderThread = new Thread(shapeFinder);
         shapeFinderThread.start();

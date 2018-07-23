@@ -8,11 +8,26 @@ public class PrescriptionMapFinder implements Runnable {
 
     private final static String[] PATTERNS = {".json", ".geojson"};
 
-    private PrescriptionMapFinderCallback callback;
+    private OnSearchStartedListener searchStartedListener = null;
 
-    public PrescriptionMapFinder(File startDir, PrescriptionMapFinderCallback callback) {
+    private onSearchEndedListener searchEndedListener = null;
+
+    private OnShapeDiscoveredListener shapeDiscoveredListener = null;
+
+    public PrescriptionMapFinder(File startDir) {
         this.startDir = startDir;
-        this.callback = callback;
+    }
+
+    public void setOnSearchStartedListener(OnSearchStartedListener searchStartedListener) {
+        this.searchStartedListener = searchStartedListener;
+    }
+
+    public void setOnSearchEndedListener(onSearchEndedListener searchEndedListener) {
+        this.searchEndedListener = searchEndedListener;
+    }
+
+    public void setOnShapeDiscoveredListener(OnShapeDiscoveredListener shapeDiscoveredListener) {
+        this.shapeDiscoveredListener = shapeDiscoveredListener;
     }
 
     private Boolean fileMatches(File file) {
@@ -32,7 +47,9 @@ public class PrescriptionMapFinder implements Runnable {
                 if (file.isDirectory()) {
                     walkDir(file);
                 } else if (fileMatches(file)) {
-                    callback.onShapeDiscovered(file.getAbsolutePath());
+                    if (shapeDiscoveredListener != null) {
+                        shapeDiscoveredListener.onShapeDiscovered(file.getAbsolutePath());
+                    }
                 }
             }
         }
@@ -40,8 +57,26 @@ public class PrescriptionMapFinder implements Runnable {
 
     @Override
     public void run() {
-        callback.onSearchStarted();
+        if (searchStartedListener != null) {
+            searchStartedListener.onSearchStarted();
+        }
+
         walkDir(startDir);
-        callback.onSearchEnded();
+
+        if (searchEndedListener != null) {
+            searchEndedListener.onSearchEnded();
+        }
+    }
+
+    public interface OnSearchStartedListener {
+        void onSearchStarted();
+    }
+
+    public interface onSearchEndedListener {
+        void onSearchEnded();
+    }
+
+    public interface OnShapeDiscoveredListener {
+        void onShapeDiscovered(String file);
     }
 }
