@@ -1,12 +1,19 @@
 package unioeste.br.openvrt;
 
+import android.Manifest;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 
 public class MainActivity extends AppCompatActivity implements SelectShapeFragment.ShapeListFragmentInteractionListener {
+
+    private static final int PERMISSION_READ_EXTERNAL_DIR = 1;
 
     private FloatingActionButton fab = null;
 
@@ -28,11 +35,40 @@ public class MainActivity extends AppCompatActivity implements SelectShapeFragme
 
     private FloatingActionButton createFloatingActionButton() {
         FloatingActionButton fab = findViewById(R.id.fab);
-        fab.setOnClickListener((view) -> {
-            toFilesListFragment();
-        });
+        fab.setOnClickListener((view) -> askPermissionsToFilesOrGoToFilesFragment());
 
         return fab;
+    }
+
+    private void askPermissionsToFilesOrGoToFilesFragment() {
+        if (hasPermissionToReadFiles()) {
+            toFilesListFragment();
+        } else {
+            askPermissionToReadFiles();
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        switch (requestCode) {
+            case PERMISSION_READ_EXTERNAL_DIR:
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    toFilesListFragment();
+                }
+                break;
+        }
+    }
+
+    @NonNull
+    private Boolean hasPermissionToReadFiles() {
+        return ContextCompat.checkSelfPermission(getApplicationContext(),
+                Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED;
+    }
+
+    private void askPermissionToReadFiles() {
+        ActivityCompat.requestPermissions(this, new String[]{
+                Manifest.permission.READ_EXTERNAL_STORAGE
+        }, PERMISSION_READ_EXTERNAL_DIR);
     }
 
     private void toEmptyStateFragment() {
