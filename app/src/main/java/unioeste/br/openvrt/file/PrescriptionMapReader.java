@@ -40,8 +40,8 @@ public class PrescriptionMapReader implements Runnable {
                 break;
             }
             stringBuilder.append(line);
-            br.close();
         } while (true);
+        br.close();
 
         return stringBuilder.toString();
     }

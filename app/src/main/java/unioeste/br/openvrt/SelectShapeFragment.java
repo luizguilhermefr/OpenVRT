@@ -64,7 +64,7 @@ public class SelectShapeFragment extends Fragment {
     }
 
     private void makeSwiper() {
-        swiper = getView().findViewById(R.id.shape_list_swiper);
+        swiper = Objects.requireNonNull(getView()).findViewById(R.id.shape_list_swiper);
         swiper.setOnRefreshListener(this::scanForFiles);
     }
 

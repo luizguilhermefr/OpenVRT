@@ -11,6 +11,8 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 
+import unioeste.br.openvrt.file.PrescriptionMapReader;
+
 public class MainActivity extends AppCompatActivity implements SelectShapeFragment.ShapeListFragmentInteractionListener {
 
     private static final int PERMISSION_READ_EXTERNAL_DIR = 1;
@@ -99,6 +101,10 @@ public class MainActivity extends AppCompatActivity implements SelectShapeFragme
 
     @Override
     public void onShapeListFragmentInteraction(String item) {
-        System.out.println(item);
+        PrescriptionMapReader mapReader = new PrescriptionMapReader(item);
+        mapReader.setOnFileReadListener(System.out::println);
+        mapReader.setOnIOExceptionListener(Throwable::printStackTrace);
+        Thread mapReaderThread = new Thread(mapReader);
+        mapReaderThread.start();
     }
 }
