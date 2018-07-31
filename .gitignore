@@ -7,3 +7,4 @@
 /captures
 .externalNativeBuild
 /app/src/main/gen/
+.gitignore
