@@ -1,6 +1,7 @@
 package unioeste.br.openvrt;
 
 import android.Manifest;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -37,7 +38,8 @@ public class MainActivity extends AppCompatActivity implements SelectShapeFragme
 
     private FloatingActionButton createFloatingActionButton() {
         FloatingActionButton fab = findViewById(R.id.fab);
-        fab.setOnClickListener((view) -> askPermissionsToFilesOrGoToFilesFragment());
+        // fab.setOnClickListener((view) -> askPermissionsToFilesOrGoToFilesFragment());
+        fab.setOnClickListener((view) -> toMapsActivity());
 
         return fab;
     }
@@ -85,6 +87,11 @@ public class MainActivity extends AppCompatActivity implements SelectShapeFragme
         FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
         fragmentTransaction.replace(R.id.fragment_container, SelectShapeFragment.newInstance());
         fragmentTransaction.commit();
+    }
+
+    private void toMapsActivity() {
+        Intent intent = new Intent(this, MapsActivity.class);
+        startActivity(intent);
     }
 
     private void makeFloatingActionButtonVisible(Boolean visible) {
