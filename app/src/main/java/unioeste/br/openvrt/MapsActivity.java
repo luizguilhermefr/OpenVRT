@@ -1,8 +1,14 @@
 package unioeste.br.openvrt;
 
+import android.Manifest;
+import android.annotation.SuppressLint;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
+import android.support.v4.content.ContextCompat;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
@@ -19,6 +25,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     private String mapLocation;
 
+    private static final int PERMISSION_ACCESS_FINE_LOCATION = 2;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -28,6 +36,37 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
+    }
+
+    private void askPermissionsToUseGpsOrCenterMap() {
+        if (hasPermissionToUseGps()) {
+            useUserLocation();
+        } else {
+            askPermissionToUseGps();
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        switch (requestCode) {
+            case PERMISSION_ACCESS_FINE_LOCATION:
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    useUserLocation();
+                }
+                break;
+        }
+    }
+
+    @NonNull
+    private Boolean hasPermissionToUseGps() {
+        return ContextCompat.checkSelfPermission(getApplicationContext(),
+                Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED;
+    }
+
+    private void askPermissionToUseGps() {
+        ActivityCompat.requestPermissions(this, new String[]{
+                Manifest.permission.ACCESS_FINE_LOCATION
+        }, PERMISSION_ACCESS_FINE_LOCATION);
     }
 
     private void parseMapToJson(String mapStr) {
@@ -47,13 +86,17 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mapReaderThread.start();
     }
 
+    @SuppressLint("MissingPermission")
+    private void useUserLocation() {
+        runOnUiThread(() -> googleMap.setMyLocationEnabled(true));
+    }
+
     private void addMapLayerToMap(JSONObject geoJson) {
         mapLayer = new GeoJsonLayer(googleMap, geoJson);
         runOnUiThread(() -> {
             mapLayer.addLayerToMap();
-//            LatLngBounds layerBounds = mapLayer.getBoundingBox();
-//            googleMap.moveCamera(CameraUpdateFactory.newLatLng(layerBounds.getCenter()));
         });
+        askPermissionsToUseGpsOrCenterMap();
     }
 
     @Override
