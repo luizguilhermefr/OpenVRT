@@ -83,7 +83,7 @@ public class MainActivity extends AppCompatActivity implements SelectShapeFragme
         makeFloatingActionButtonVisible(false);
         FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
         fragmentTransaction.replace(R.id.fragment_container, SelectShapeFragment.newInstance());
-        fragmentTransaction.commit();
+        fragmentTransaction.commitAllowingStateLoss();
     }
 
     private void toMapsActivity(String mapLocation) {
