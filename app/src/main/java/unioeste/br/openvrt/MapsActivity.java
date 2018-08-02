@@ -1,16 +1,11 @@
 package unioeste.br.openvrt;
 
 import android.content.Intent;
-import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
-
-import com.google.android.gms.maps.CameraUpdateFactory;
+import android.support.v4.app.FragmentActivity;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.LatLngBounds;
-import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.maps.android.data.geojson.GeoJsonLayer;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -22,12 +17,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     private GeoJsonLayer mapLayer;
 
+    private String mapLocation;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Intent intent = getIntent();
-        String mapLocation = intent.getStringExtra("map");
-        openFile(mapLocation);
+        mapLocation = intent.getStringExtra("map");
         setContentView(R.layout.activity_maps);
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
@@ -43,8 +39,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         }
     }
 
-    private void openFile(String fileLocation) {
-        PrescriptionMapReader mapReader = new PrescriptionMapReader(fileLocation);
+    private void openFile() {
+        PrescriptionMapReader mapReader = new PrescriptionMapReader(mapLocation);
         mapReader.setOnFileReadListener(this::parseMapToJson);
         mapReader.setOnIOExceptionListener(Throwable::printStackTrace);
         Thread mapReaderThread = new Thread(mapReader);
@@ -52,14 +48,17 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
     private void addMapLayerToMap(JSONObject geoJson) {
-        GeoJsonLayer layer = new GeoJsonLayer(this.googleMap, geoJson);
-        layer.addLayerToMap();
-        LatLngBounds layerBounds = layer.getBoundingBox();
-        this.googleMap.moveCamera(CameraUpdateFactory.newLatLng(layerBounds.getCenter()));
+        mapLayer = new GeoJsonLayer(googleMap, geoJson);
+        runOnUiThread(() -> {
+            mapLayer.addLayerToMap();
+//            LatLngBounds layerBounds = mapLayer.getBoundingBox();
+//            googleMap.moveCamera(CameraUpdateFactory.newLatLng(layerBounds.getCenter()));
+        });
     }
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
         this.googleMap = googleMap;
+        openFile();
     }
 }
