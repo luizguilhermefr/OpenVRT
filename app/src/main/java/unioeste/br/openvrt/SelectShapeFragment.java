@@ -107,6 +107,7 @@ public class SelectShapeFragment extends Fragment {
         });
         shapeFinderThread = new Thread(shapeFinder);
         shapeFinderThread.start();
+        // TODO: Alert when no maps found?
     }
 
     public interface ShapeListFragmentInteractionListener {
