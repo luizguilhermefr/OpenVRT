@@ -46,7 +46,7 @@ public class FeatureStyler {
         float rate = Float.valueOf(rateStr);
         float percentage = this.rateAsPercentage(rate);
         float hue = (1 - percentage) * 120;
-        float[] hsl = new float[]{hue, 50, 50};
+        float[] hsl = new float[]{hue, 1, (float) 0.5};
         int color = ColorUtils.HSLToColor(hsl);
         GeoJsonPolygonStyle style = new GeoJsonPolygonStyle();
         style.setStrokeColor(color);
