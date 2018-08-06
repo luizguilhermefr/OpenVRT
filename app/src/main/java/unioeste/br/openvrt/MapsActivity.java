@@ -13,25 +13,21 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.content.ContextCompat;
-
-import com.google.android.gms.maps.CameraUpdate;
-import com.google.android.gms.maps.CameraUpdateFactory;
-import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.OnMapReadyCallback;
-import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.*;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.maps.android.PolyUtil;
 import com.google.maps.android.data.geojson.GeoJsonFeature;
 import com.google.maps.android.data.geojson.GeoJsonLayer;
-
+import com.google.maps.android.data.geojson.GeoJsonPolygon;
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import java.util.Objects;
-
 import unioeste.br.openvrt.exception.InvalidOpenVRTGeoJsonException;
 import unioeste.br.openvrt.file.PrescriptionMapReader;
+import unioeste.br.openvrt.file.ProtocolDictionary;
 import unioeste.br.openvrt.map.FeatureStyler;
 import unioeste.br.openvrt.map.LayerValidator;
+
+import java.util.Objects;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback, LocationListener {
 
@@ -50,6 +46,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private static final int PERMISSION_ACCESS_FINE_LOCATION = 2;
 
     private static final float MIN_DISTANCE = 1000;
+
+    private float currentRate = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -136,6 +134,28 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         }
     }
 
+    private boolean featureContainsLocation(LatLng point, @NonNull GeoJsonFeature feature) {
+        if (feature.getBoundingBox() != null) {
+            if (!feature.getBoundingBox().contains(point)) {
+                return false;
+            }
+        }
+
+        return PolyUtil.containsLocation(point, ((GeoJsonPolygon) feature.getGeometry()).getOuterBoundaryCoordinates(), false);
+    }
+
+    private void calculateNextApplicationRate(Location location) {
+        for (GeoJsonFeature feature : mapLayer.getFeatures()) {
+            LatLng point = new LatLng(location.getLatitude(), location.getLongitude());
+            if (feature.getGeometry() instanceof GeoJsonPolygon) {
+                if (featureContainsLocation(point, feature)) {
+                    currentRate = Float.valueOf(feature.getProperty(ProtocolDictionary.RATE_KEY));
+                    break;
+                }
+            }
+        }
+    }
+
     @Override
     public void onMapReady(GoogleMap googleMap) {
         this.googleMap = googleMap;
@@ -146,8 +166,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     @Override
     public void onLocationChanged(Location location) {
         LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
-        CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(latLng, 24);
+        CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(latLng, 16);
         this.googleMap.animateCamera(cameraUpdate);
+        calculateNextApplicationRate(location);
     }
 
     @Override
