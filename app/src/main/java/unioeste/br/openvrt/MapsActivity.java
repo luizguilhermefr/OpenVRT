@@ -13,6 +13,7 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.content.ContextCompat;
+import android.widget.TextView;
 import com.google.android.gms.maps.*;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.maps.android.PolyUtil;
@@ -49,6 +50,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     private float currentRate = 0;
 
+    private TextView rateIndicator;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -57,6 +60,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         setContentView(R.layout.activity_maps);
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
+        rateIndicator = findViewById(R.id.rate_indicator);
         mapFragment.getMapAsync(this);
     }
 
@@ -150,6 +154,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             if (feature.getGeometry() instanceof GeoJsonPolygon) {
                 if (featureContainsLocation(point, feature)) {
                     currentRate = Float.valueOf(feature.getProperty(ProtocolDictionary.RATE_KEY));
+                    runOnUiThread(() -> rateIndicator.setText(String.valueOf(currentRate)));
                     break;
                 }
             }
