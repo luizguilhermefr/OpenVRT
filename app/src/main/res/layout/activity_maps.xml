@@ -8,7 +8,7 @@
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="42sp"
+        android:layout_height="64sp"
         android:layout_gravity="bottom"
         android:background="@color/colorLightBackgroundTransparent"
         android:gravity="center"
@@ -19,9 +19,17 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:shadowColor="@color/colorPrimaryDark"
-            android:text="0"
+            android:text="0.0"
             android:textSize="32sp"
             tools:ignore="HardcodedText" />
+
+        <TextView
+            android:id="@+id/accuracy_indicator"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:shadowColor="@color/colorPrimaryDark"
+            android:text="@string/accuracy_feets"
+            android:textSize="18sp" />
     </LinearLayout>
 
 </fragment>

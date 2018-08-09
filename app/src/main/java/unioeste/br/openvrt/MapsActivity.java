@@ -8,6 +8,7 @@ import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.location.LocationProvider;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
@@ -50,7 +51,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     private float currentRate = 0;
 
+    private float currentAccuracy = 0;
+
     private TextView rateIndicator;
+
+    private TextView accuracyIndicator;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,6 +66,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         rateIndicator = findViewById(R.id.rate_indicator);
+        accuracyIndicator = findViewById(R.id.accuracy_indicator);
         mapFragment.getMapAsync(this);
     }
 
@@ -148,17 +154,28 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         return PolyUtil.containsLocation(point, ((GeoJsonPolygon) feature.getGeometry()).getOuterBoundaryCoordinates(), false);
     }
 
-    private void calculateNextApplicationRate(Location location) {
+    private float calculateNextApplicationRate(LatLng point) {
         for (GeoJsonFeature feature : mapLayer.getFeatures()) {
-            LatLng point = new LatLng(location.getLatitude(), location.getLongitude());
             if (feature.getGeometry() instanceof GeoJsonPolygon) {
                 if (featureContainsLocation(point, feature)) {
-                    currentRate = Float.valueOf(feature.getProperty(ProtocolDictionary.RATE_KEY));
-                    runOnUiThread(() -> rateIndicator.setText(String.valueOf(currentRate)));
-                    break;
+                    return Float.valueOf(feature.getProperty(ProtocolDictionary.RATE_KEY));
                 }
             }
         }
+
+        return 0;
+    }
+
+    private void onRateChanged(Float nextRate) {
+        currentRate = nextRate;
+        String rateString = getString(R.string.rate_indicator, currentRate);
+        runOnUiThread(() -> rateIndicator.setText(rateString));
+    }
+
+    private void onAccuracyChanged(Float nextAccuracy) {
+        currentAccuracy = nextAccuracy;
+        String accuracyString = getString(R.string.accuracy_feets, currentAccuracy);
+        runOnUiThread(() -> accuracyIndicator.setText(accuracyString));
     }
 
     @Override
@@ -170,15 +187,28 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     @Override
     public void onLocationChanged(Location location) {
-        LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
-        CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(latLng, 16);
+        LatLng point = new LatLng(location.getLatitude(), location.getLongitude());
+        CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(point, 16);
         this.googleMap.animateCamera(cameraUpdate);
-        calculateNextApplicationRate(location);
+        Float nextRate = calculateNextApplicationRate(point);
+        Float nextAccuracy = location.getAccuracy();
+        onRateChanged(nextRate);
+        onAccuracyChanged(nextAccuracy);
     }
 
     @Override
     public void onStatusChanged(String provider, int status, Bundle extras) {
-        //
+        switch (status) {
+            case LocationProvider.AVAILABLE:
+                //
+                break;
+            case LocationProvider.TEMPORARILY_UNAVAILABLE:
+                //
+                break;
+            case LocationProvider.OUT_OF_SERVICE:
+                //
+                break;
+        }
     }
 
     @Override
