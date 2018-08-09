@@ -8,7 +8,7 @@
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="64sp"
+        android:layout_height="68sp"
         android:layout_gravity="bottom"
         android:background="@color/colorLightBackgroundTransparent"
         android:gravity="center"
@@ -28,8 +28,9 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:shadowColor="@color/colorPrimaryDark"
-            android:text="@string/accuracy_feets"
-            android:textSize="18sp" />
+            android:text="0.0"
+            android:textSize="16sp"
+            tools:ignore="HardcodedText" />
     </LinearLayout>
 
 </fragment>

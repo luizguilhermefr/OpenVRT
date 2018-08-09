@@ -8,6 +8,6 @@
     <string name="ok">OK</string>
     <string name="cancel">Cancel</string>
     <string name="scanning_maps">Scanning for maps</string>
-    <string name="accuracy_feets">Precision: %1$d ft</string>
-    <string name="rate_indicator" translatable="false">%1$d</string>
+    <string name="current_precision">Precision: %1$f ft</string>
+    <string name="current_rate" translatable="false">%1$f</string>
 </resources>

@@ -43,11 +43,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     private FeatureStyler featureStyler;
 
-    private static final long MIN_TIME = 400;
+    private static final long MIN_TIME = 500;
+
+    private static final float MIN_DISTANCE = 1;
 
     private static final int PERMISSION_ACCESS_FINE_LOCATION = 2;
-
-    private static final float MIN_DISTANCE = 1000;
 
     private float currentRate = 0;
 
@@ -126,6 +126,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             googleMap.getUiSettings().setMyLocationButtonEnabled(false);
             locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
             Objects.requireNonNull(locationManager).requestLocationUpdates(LocationManager.GPS_PROVIDER, MIN_TIME, MIN_DISTANCE, this);
+            Objects.requireNonNull(locationManager).requestLocationUpdates(LocationManager.NETWORK_PROVIDER, MIN_TIME, MIN_DISTANCE, this);
         });
     }
 
@@ -168,13 +169,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     private void onRateChanged(Float nextRate) {
         currentRate = nextRate;
-        String rateString = getString(R.string.rate_indicator, currentRate);
+        String rateString = getString(R.string.current_rate, currentRate);
         runOnUiThread(() -> rateIndicator.setText(rateString));
     }
 
     private void onAccuracyChanged(Float nextAccuracy) {
         currentAccuracy = nextAccuracy;
-        String accuracyString = getString(R.string.accuracy_feets, currentAccuracy);
+        String accuracyString = getString(R.string.current_precision, currentAccuracy);
         runOnUiThread(() -> accuracyIndicator.setText(accuracyString));
     }
 
@@ -213,7 +214,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     @Override
     public void onProviderEnabled(String provider) {
-        //
+        // TODO: Show message?
     }
 
     @Override
