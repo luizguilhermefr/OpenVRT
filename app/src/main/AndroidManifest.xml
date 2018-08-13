@@ -40,6 +40,9 @@
             android:label="@string/app_name">
 
         </activity>
+        <activity
+            android:name=".SelectShapeActivity"
+            android:label="@string/app_name" />
     </application>
 
 </manifest>

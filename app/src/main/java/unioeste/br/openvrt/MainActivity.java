@@ -5,18 +5,15 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
-import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.view.View;
 
-public class MainActivity extends AppCompatActivity implements SelectShapeFragment.ShapeListFragmentInteractionListener {
+public class MainActivity extends AppCompatActivity {
 
     private static final int PERMISSION_READ_EXTERNAL_DIR = 1;
-
-    private FloatingActionButton fab = null;
 
     private Integer selectedMeasurement = 0;
 
@@ -34,16 +31,9 @@ public class MainActivity extends AppCompatActivity implements SelectShapeFragme
         return measurementDialogBuilder.create();
     }
 
-    private FloatingActionButton createFloatingActionButton() {
-        FloatingActionButton fab = findViewById(R.id.fab);
-        fab.setOnClickListener((view) -> askPermissionsToFilesOrGoToFilesFragment());
-
-        return fab;
-    }
-
-    private void askPermissionsToFilesOrGoToFilesFragment() {
+    public void askPermissionsToFilesOrGoToSelectShapeActivity(View view) {
         if (hasPermissionToReadFiles()) {
-            toFilesListFragment();
+            toSelectShapeActivity();
         } else {
             askPermissionToReadFiles();
         }
@@ -54,7 +44,7 @@ public class MainActivity extends AppCompatActivity implements SelectShapeFragme
         switch (requestCode) {
             case PERMISSION_READ_EXTERNAL_DIR:
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    toFilesListFragment();
+                    toSelectShapeActivity();
                 }
                 break;
         }
@@ -72,40 +62,14 @@ public class MainActivity extends AppCompatActivity implements SelectShapeFragme
         }, PERMISSION_READ_EXTERNAL_DIR);
     }
 
-    private void toEmptyStateFragment() {
-        makeFloatingActionButtonVisible(true);
-        FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
-        fragmentTransaction.replace(R.id.fragment_container, EmptyStateFragment.newInstance());
-        fragmentTransaction.commit();
-    }
-
-    private void toFilesListFragment() {
-        makeFloatingActionButtonVisible(false);
-        FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
-        fragmentTransaction.replace(R.id.fragment_container, SelectShapeFragment.newInstance());
-        fragmentTransaction.commitAllowingStateLoss();
-    }
-
-    private void toMapsActivity(String mapLocation) {
-        Intent intent = new Intent(this, MapsActivity.class);
-        intent.putExtra("map", mapLocation);
+    private void toSelectShapeActivity() {
+        Intent intent = new Intent(this, SelectShapeActivity.class);
         startActivity(intent);
-    }
-
-    private void makeFloatingActionButtonVisible(Boolean visible) {
-        runOnUiThread(() -> fab.setVisibility(visible ? FloatingActionButton.VISIBLE : FloatingActionButton.INVISIBLE));
     }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        fab = createFloatingActionButton();
-        toEmptyStateFragment();
-    }
-
-    @Override
-    public void onShapeListFragmentInteraction(String item) {
-        toMapsActivity(item);
     }
 }

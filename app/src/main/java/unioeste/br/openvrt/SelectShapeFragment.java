@@ -12,12 +12,11 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import unioeste.br.openvrt.file.PrescriptionMapFinder;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Objects;
-
-import unioeste.br.openvrt.file.PrescriptionMapFinder;
 
 public class SelectShapeFragment extends Fragment {
 
@@ -38,47 +37,9 @@ public class SelectShapeFragment extends Fragment {
         return new SelectShapeFragment();
     }
 
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-    }
-
-    @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_shape_list, container, false);
-        Context context = view.getContext();
-        mAdapter = new SelectShapeRecyclerViewAdapter(new ArrayList<>(), mListener);
-        RecyclerView recyclerView = view.findViewById(R.id.shape_list);
-        recyclerView.setLayoutManager(new LinearLayoutManager(context));
-        recyclerView.setAdapter(mAdapter);
-
-        return view;
-    }
-
-    @Override
-    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-        makeSwiper();
-        scanForFiles();
-    }
-
     private void makeSwiper() {
         swiper = Objects.requireNonNull(getView()).findViewById(R.id.shape_list_swiper);
         swiper.setOnRefreshListener(this::scanForFiles);
-    }
-
-    @Override
-    public void onAttach(Context context) {
-        super.onAttach(context);
-        mListener = (ShapeListFragmentInteractionListener) context;
-    }
-
-    @Override
-    public void onDetach() {
-        super.onDetach();
-        killShapeFinderThread();
-        mListener = null;
     }
 
     private void killShapeFinderThread() {
@@ -108,6 +69,44 @@ public class SelectShapeFragment extends Fragment {
         shapeFinderThread = new Thread(shapeFinder);
         shapeFinderThread.start();
         // TODO: Alert when no maps found?
+    }
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        mListener = (ShapeListFragmentInteractionListener) context;
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        killShapeFinderThread();
+        mListener = null;
+    }
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+    }
+
+    @Override
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.fragment_shape_list, container, false);
+        Context context = view.getContext();
+        mAdapter = new SelectShapeRecyclerViewAdapter(new ArrayList<>(), mListener);
+        RecyclerView recyclerView = view.findViewById(R.id.shape_list);
+        recyclerView.setLayoutManager(new LinearLayoutManager(context));
+        recyclerView.setAdapter(mAdapter);
+
+        return view;
+    }
+
+    @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        makeSwiper();
+        scanForFiles();
     }
 
     public interface ShapeListFragmentInteractionListener {
