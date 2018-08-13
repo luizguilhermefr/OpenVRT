@@ -7,9 +7,8 @@ import android.support.v7.app.AppCompatActivity;
 
 public class SelectShapeActivity extends AppCompatActivity implements SelectShapeFragment.ShapeListFragmentInteractionListener {
 
-    private void toMapsActivity(String mapLocation) {
-        Intent intent = new Intent(this, MapsActivity.class);
-        intent.putExtra("map", mapLocation);
+    private void toDevicesActivity(String device) {
+        Intent intent = new Intent(this, SelectDeviceActivity.class);
         startActivity(intent);
     }
 
@@ -18,12 +17,12 @@ public class SelectShapeActivity extends AppCompatActivity implements SelectShap
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_select_shape);
         FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
-        fragmentTransaction.replace(R.id.fragment_container, SelectShapeFragment.newInstance());
+        fragmentTransaction.replace(R.id.shape_fragment_container, SelectShapeFragment.newInstance());
         fragmentTransaction.commit();
     }
 
     @Override
     public void onShapeListFragmentInteraction(String item) {
-        toMapsActivity(item);
+        toDevicesActivity(item);
     }
 }
