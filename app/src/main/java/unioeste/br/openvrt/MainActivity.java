@@ -39,17 +39,6 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        switch (requestCode) {
-            case PERMISSION_READ_EXTERNAL_DIR:
-                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    toSelectShapeActivity();
-                }
-                break;
-        }
-    }
-
     @NonNull
     private Boolean hasPermissionToReadFiles() {
         return ContextCompat.checkSelfPermission(getApplicationContext(),
@@ -71,5 +60,16 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        switch (requestCode) {
+            case PERMISSION_READ_EXTERNAL_DIR:
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    toSelectShapeActivity();
+                }
+                break;
+        }
     }
 }

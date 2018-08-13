@@ -1,6 +1,11 @@
 package unioeste.br.openvrt;
 
+import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -23,10 +28,13 @@ public class SelectDeviceFragment extends Fragment {
 
     private SwipeRefreshLayout swiper = null;
 
-    private Thread shapeFinderThread = null;
+    private BluetoothAdapter bluetoothAdapter;
+
+    private BroadcastReceiver broadcastReceiver;
 
     public SelectDeviceFragment() {
-        //
+        bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+        broadcastReceiver = new DeviceBroadcastReceiver();
     }
 
     @NonNull
@@ -40,11 +48,28 @@ public class SelectDeviceFragment extends Fragment {
     }
 
     private void killDeviceFinderThread() {
-        //
+        if (bluetoothAdapter.isDiscovering()) {
+            bluetoothAdapter.cancelDiscovery();
+        }
+        Objects.requireNonNull(getContext()).unregisterReceiver(broadcastReceiver);
     }
 
     private void scanForDevices() {
-        //
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(BluetoothDevice.ACTION_FOUND);
+        filter.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
+        bluetoothAdapter.startDiscovery();
+        Objects.requireNonNull(getContext()).registerReceiver(broadcastReceiver, filter);
+    }
+
+    private void onDeviceFound(@NonNull BluetoothDevice device) {
+        mAdapter.add(device.getName());
+        Objects.requireNonNull(getActivity()).runOnUiThread(() -> mAdapter.notifyDataSetChanged());
+    }
+
+    private void onDiscoveryFinished() {
+        Objects.requireNonNull(getActivity()).runOnUiThread(() -> swiper.setRefreshing(false));
+        killDeviceFinderThread();
     }
 
     @Override
@@ -87,5 +112,18 @@ public class SelectDeviceFragment extends Fragment {
 
     public interface DeviceListFragmentInteractionListener {
         void onDeviceListFragmentInteraction(String item);
+    }
+
+    private class DeviceBroadcastReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String action = intent.getAction();
+            if (Objects.equals(action, BluetoothDevice.ACTION_FOUND)) {
+                BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+                onDeviceFound(device);
+            } else if (Objects.equals(action, BluetoothAdapter.ACTION_DISCOVERY_FINISHED)) {
+                onDiscoveryFinished();
+            }
+        }
     }
 }

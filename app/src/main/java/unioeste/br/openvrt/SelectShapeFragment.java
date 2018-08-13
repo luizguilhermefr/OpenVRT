@@ -51,21 +51,29 @@ public class SelectShapeFragment extends Fragment {
         }
     }
 
+    private void onSearchStarted() {
+        mAdapter.clear();
+        Objects.requireNonNull(getActivity()).runOnUiThread(() -> {
+            mAdapter.notifyDataSetChanged();
+            swiper.setRefreshing(true);
+        });
+    }
+
+    private void onSearchEnded() {
+        Objects.requireNonNull(getActivity()).runOnUiThread(() -> swiper.setRefreshing(false));
+    }
+
+    private void onShapeDiscovered(String file) {
+        mAdapter.add(file);
+        Objects.requireNonNull(getActivity()).runOnUiThread(() -> mAdapter.notifyDataSetChanged());
+    }
+
     private void scanForFiles() {
         File startingPoint = Environment.getExternalStorageDirectory();
         PrescriptionMapFinder shapeFinder = new PrescriptionMapFinder(startingPoint);
-        shapeFinder.setOnSearchStartedListener(() -> {
-            mAdapter.clear();
-            Objects.requireNonNull(getActivity()).runOnUiThread(() -> {
-                mAdapter.notifyDataSetChanged();
-                swiper.setRefreshing(true);
-            });
-        });
-        shapeFinder.setOnSearchEndedListener(() -> Objects.requireNonNull(getActivity()).runOnUiThread(() -> swiper.setRefreshing(false)));
-        shapeFinder.setOnShapeDiscoveredListener(file -> {
-            mAdapter.add(file);
-            Objects.requireNonNull(getActivity()).runOnUiThread(() -> mAdapter.notifyDataSetChanged());
-        });
+        shapeFinder.setOnSearchStartedListener(this::onSearchStarted);
+        shapeFinder.setOnSearchEndedListener(this::onSearchEnded);
+        shapeFinder.setOnShapeDiscoveredListener(this::onShapeDiscovered);
         shapeFinderThread = new Thread(shapeFinder);
         shapeFinderThread.start();
         // TODO: Alert when no maps found?
