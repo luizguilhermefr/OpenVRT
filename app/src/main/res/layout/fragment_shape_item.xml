@@ -1,16 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
-    android:orientation="horizontal">
+    android:background="?attr/selectableItemBackground"
+    android:orientation="horizontal"
+    android:textAppearance="?attr/textAppearanceListItem">
+
+    <ImageView
+        android:id="@+id/shape_list_item_icon"
+        android:layout_width="32sp"
+        android:layout_height="32sp"
+        android:layout_gravity="center_vertical"
+        android:layout_marginStart="@dimen/fab_margin"
+        android:src="@android:drawable/ic_dialog_map"
+        android:tint="@color/colorPrimaryDark"
+        tools:ignore="ContentDescription" />
 
     <TextView
         android:id="@+id/shape_list_item"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_margin="@dimen/text_margin"
-        android:textSize="18sp"
-        android:textAppearance="?attr/textAppearanceListItem"
-        android:background="?attr/selectableItemBackground"/>
+        android:textSize="18sp" />
 
 </LinearLayout>
