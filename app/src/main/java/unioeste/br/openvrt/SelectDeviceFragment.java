@@ -1,5 +1,6 @@
 package unioeste.br.openvrt;
 
+import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
@@ -22,6 +23,8 @@ import java.util.Objects;
 
 public class SelectDeviceFragment extends Fragment {
 
+    private static final int BT_ENABLE_REQUEST = 41;
+
     private DeviceListFragmentInteractionListener mListener;
 
     private SelectDeviceRecyclerViewAdapter mAdapter;
@@ -33,8 +36,7 @@ public class SelectDeviceFragment extends Fragment {
     private BroadcastReceiver broadcastReceiver;
 
     public SelectDeviceFragment() {
-        bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-        broadcastReceiver = new DeviceBroadcastReceiver();
+        //
     }
 
     @NonNull
@@ -51,15 +53,19 @@ public class SelectDeviceFragment extends Fragment {
         if (bluetoothAdapter.isDiscovering()) {
             bluetoothAdapter.cancelDiscovery();
         }
-        Objects.requireNonNull(getContext()).unregisterReceiver(broadcastReceiver);
+        try {
+            Objects.requireNonNull(getContext()).unregisterReceiver(broadcastReceiver);
+        } catch (IllegalArgumentException ignored) {
+            //
+        }
     }
 
     private void scanForDevices() {
-        IntentFilter filter = new IntentFilter();
-        filter.addAction(BluetoothDevice.ACTION_FOUND);
-        filter.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
-        bluetoothAdapter.startDiscovery();
-        Objects.requireNonNull(getContext()).registerReceiver(broadcastReceiver, filter);
+        onDiscoveryStarted();
+        boolean discovering = bluetoothAdapter.startDiscovery();
+        if (!discovering) {
+            // TODO: Discovery error.
+        }
     }
 
     private void onDeviceFound(@NonNull BluetoothDevice device) {
@@ -67,9 +73,49 @@ public class SelectDeviceFragment extends Fragment {
         Objects.requireNonNull(getActivity()).runOnUiThread(() -> mAdapter.notifyDataSetChanged());
     }
 
+    private void onDiscoveryStarted() {
+        Objects.requireNonNull(getActivity()).runOnUiThread(() -> {
+            mAdapter.notifyDataSetChanged();
+            swiper.setRefreshing(true);
+        });
+    }
+
     private void onDiscoveryFinished() {
         Objects.requireNonNull(getActivity()).runOnUiThread(() -> swiper.setRefreshing(false));
         killDeviceFinderThread();
+    }
+
+    private void initiateBroadcastReceiver() {
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(BluetoothDevice.ACTION_FOUND);
+        filter.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
+        broadcastReceiver = new DeviceBroadcastReceiver();
+        Objects.requireNonNull(getContext()).registerReceiver(broadcastReceiver, filter);
+    }
+
+    private void prepareBluetoothAndScanForDevices() {
+        bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+        if (bluetoothAdapter == null) {
+            // TODO: Error! Device doesn't has bluetooth!!!
+        } else {
+            if (bluetoothAdapter.isEnabled()) {
+                scanForDevices();
+            } else {
+                Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+                startActivityForResult(enableBtIntent, BT_ENABLE_REQUEST);
+            }
+        }
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        switch (requestCode) {
+            case BT_ENABLE_REQUEST:
+                if (resultCode == Activity.RESULT_OK) {
+                    scanForDevices();
+                }
+                break;
+        }
     }
 
     @Override
@@ -83,11 +129,6 @@ public class SelectDeviceFragment extends Fragment {
         super.onDetach();
         killDeviceFinderThread();
         mListener = null;
-    }
-
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
     }
 
     @Override
@@ -107,7 +148,8 @@ public class SelectDeviceFragment extends Fragment {
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         makeSwiper();
-        scanForDevices();
+        prepareBluetoothAndScanForDevices();
+        initiateBroadcastReceiver();
     }
 
     public interface DeviceListFragmentInteractionListener {

@@ -24,6 +24,6 @@ public class SelectDeviceActivity extends AppCompatActivity implements SelectDev
 
     @Override
     public void onDeviceListFragmentInteraction(String item) {
-
+        //
     }
 }
