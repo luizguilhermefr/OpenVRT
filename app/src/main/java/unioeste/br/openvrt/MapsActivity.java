@@ -1,19 +1,15 @@
 package unioeste.br.openvrt;
 
-import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.location.LocationProvider;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
-import android.support.v4.content.ContextCompat;
 import android.widget.TextView;
 import com.google.android.gms.maps.*;
 import com.google.android.gms.maps.model.LatLng;
@@ -47,8 +43,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     private static final float MIN_DISTANCE = 1;
 
-    private static final int PERMISSION_ACCESS_FINE_LOCATION = 2;
-
     private float currentRate = 0;
 
     private float currentAccuracy = 0;
@@ -68,37 +62,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         rateIndicator = findViewById(R.id.rate_indicator);
         accuracyIndicator = findViewById(R.id.accuracy_indicator);
         mapFragment.getMapAsync(this);
-    }
-
-    private void askPermissionsToUseGpsOrCenterMap() {
-        if (hasPermissionToUseGps()) {
-            useUserLocation();
-        } else {
-            askPermissionToUseGps();
-        }
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        switch (requestCode) {
-            case PERMISSION_ACCESS_FINE_LOCATION:
-                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    useUserLocation();
-                }
-                break;
-        }
-    }
-
-    @NonNull
-    private Boolean hasPermissionToUseGps() {
-        return ContextCompat.checkSelfPermission(getApplicationContext(),
-                Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED;
-    }
-
-    private void askPermissionToUseGps() {
-        ActivityCompat.requestPermissions(this, new String[]{
-                Manifest.permission.ACCESS_FINE_LOCATION
-        }, PERMISSION_ACCESS_FINE_LOCATION);
     }
 
     private void parseMapToJson(String mapStr) {
@@ -136,7 +99,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         featureStyler = FeatureStyler.newInstance(mapLayer);
         applyMapsStyles();
         runOnUiThread(() -> mapLayer.addLayerToMap());
-        askPermissionsToUseGpsOrCenterMap();
+        useUserLocation();
     }
 
     private void applyMapsStyles() {
