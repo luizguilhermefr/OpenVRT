@@ -69,6 +69,7 @@ public class SelectDeviceFragment extends Fragment {
     }
 
     private void onDiscoveryStarted() {
+        mAdapter.clear();
         Objects.requireNonNull(getActivity()).runOnUiThread(() -> {
             mAdapter.notifyDataSetChanged();
             swiper.setRefreshing(true);

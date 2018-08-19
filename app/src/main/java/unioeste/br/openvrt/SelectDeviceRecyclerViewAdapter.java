@@ -24,7 +24,7 @@ public class SelectDeviceRecyclerViewAdapter extends RecyclerView.Adapter<Select
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.fragment_shape_item, parent, false);
+                .inflate(R.layout.fragment_device_item, parent, false);
         return new ViewHolder(view);
     }
 
@@ -64,7 +64,7 @@ public class SelectDeviceRecyclerViewAdapter extends RecyclerView.Adapter<Select
         ViewHolder(View view) {
             super(view);
             mView = view;
-            mNameView = view.findViewById(R.id.shape_list_item);
+            mNameView = view.findViewById(R.id.device_list_item);
         }
 
         @Override
