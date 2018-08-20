@@ -58,7 +58,7 @@ public class SelectDeviceFragment extends Fragment {
     }
 
     private void onDeviceFound(@NonNull BluetoothDevice device) {
-        mAdapter.add(device.getName());
+        mAdapter.add(device);
         Objects.requireNonNull(getActivity()).runOnUiThread(() -> mAdapter.notifyDataSetChanged());
     }
 
@@ -143,7 +143,7 @@ public class SelectDeviceFragment extends Fragment {
     }
 
     public interface DeviceListFragmentInteractionListener {
-        void onDeviceListFragmentInteraction(String item);
+        void onDeviceListFragmentInteraction(BluetoothDevice item);
     }
 
     private class DeviceDiscoveryBroadcastReceiver extends BroadcastReceiver {

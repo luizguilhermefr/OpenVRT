@@ -1,5 +1,6 @@
 package unioeste.br.openvrt;
 
+import android.bluetooth.BluetoothDevice;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -11,11 +12,13 @@ import java.util.ArrayList;
 
 public class SelectDeviceRecyclerViewAdapter extends RecyclerView.Adapter<SelectDeviceRecyclerViewAdapter.ViewHolder> {
 
-    private final ArrayList<String> mValues;
+    private final ArrayList<BluetoothDevice> mValues;
 
     private final SelectDeviceFragment.DeviceListFragmentInteractionListener mListener;
 
-    SelectDeviceRecyclerViewAdapter(ArrayList<String> items, SelectDeviceFragment.DeviceListFragmentInteractionListener listener) {
+    private boolean locked = false;
+
+    SelectDeviceRecyclerViewAdapter(ArrayList<BluetoothDevice> items, SelectDeviceFragment.DeviceListFragmentInteractionListener listener) {
         mValues = items;
         mListener = listener;
     }
@@ -32,7 +35,9 @@ public class SelectDeviceRecyclerViewAdapter extends RecyclerView.Adapter<Select
     public void onBindViewHolder(@NonNull final ViewHolder holder, int position) {
         holder.mItem = mValues.get(position);
 
-        holder.mNameView.setText(mValues.get(position));
+        holder.mNameView.setText(mValues.get(position).getName());
+
+        holder.mNameView.setEnabled(!locked);
 
         holder.mView.setOnClickListener(v -> {
             if (mListener != null) {
@@ -41,7 +46,12 @@ public class SelectDeviceRecyclerViewAdapter extends RecyclerView.Adapter<Select
         });
     }
 
-    public void add(String item) {
+    private void lock() {
+        locked = true;
+        notifyDataSetChanged();
+    }
+
+    public void add(BluetoothDevice item) {
         mValues.add(item);
     }
 
@@ -59,7 +69,7 @@ public class SelectDeviceRecyclerViewAdapter extends RecyclerView.Adapter<Select
 
         final TextView mNameView;
 
-        String mItem;
+        BluetoothDevice mItem;
 
         ViewHolder(View view) {
             super(view);

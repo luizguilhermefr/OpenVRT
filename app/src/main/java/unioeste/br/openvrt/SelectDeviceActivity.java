@@ -1,5 +1,6 @@
 package unioeste.br.openvrt;
 
+import android.bluetooth.BluetoothDevice;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.FragmentTransaction;
@@ -13,6 +14,10 @@ public class SelectDeviceActivity extends AppCompatActivity implements SelectDev
         startActivity(intent);
     }
 
+    private void onSelectDevice(BluetoothDevice device) {
+
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -23,7 +28,7 @@ public class SelectDeviceActivity extends AppCompatActivity implements SelectDev
     }
 
     @Override
-    public void onDeviceListFragmentInteraction(String item) {
-        //
+    public void onDeviceListFragmentInteraction(BluetoothDevice device) {
+        onSelectDevice(device);
     }
 }
