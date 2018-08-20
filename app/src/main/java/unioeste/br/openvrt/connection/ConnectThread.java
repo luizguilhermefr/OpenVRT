@@ -16,10 +16,10 @@ public class ConnectThread extends Thread {
 
     private UUID uuid;
 
-    private BluetoothDevice pairedDevice;
+    private BluetoothDevice device;
 
-    public ConnectThread(BluetoothDevice pairedDevice, UUID uuid) {
-        this.pairedDevice = pairedDevice;
+    public ConnectThread(BluetoothDevice device, UUID uuid) {
+        this.device = device;
         this.uuid = uuid;
     }
 
@@ -57,7 +57,7 @@ public class ConnectThread extends Thread {
     public void run() {
         onConnecting();
         try {
-            BluetoothSocket socket = pairedDevice.createRfcommSocketToServiceRecord(uuid);
+            BluetoothSocket socket = device.createRfcommSocketToServiceRecord(uuid);
             onConnected(socket);
         } catch (IOException e) {
             onCannotConnect();

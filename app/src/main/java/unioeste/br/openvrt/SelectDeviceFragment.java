@@ -1,6 +1,5 @@
 package unioeste.br.openvrt;
 
-import android.Manifest;
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
@@ -8,13 +7,10 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
-import android.support.v4.content.ContextCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -27,9 +23,7 @@ import java.util.Objects;
 
 public class SelectDeviceFragment extends Fragment {
 
-    private static final int PERMISSION_ACCESS_FINE_LOCATION = 21;
-
-    private static final int BT_ENABLE_REQUEST = 41;
+    private static final int BT_ENABLE_REQUEST = 3;
 
     private DeviceListFragmentInteractionListener mListener;
 
@@ -52,7 +46,7 @@ public class SelectDeviceFragment extends Fragment {
 
     private void makeSwiper() {
         swiper = Objects.requireNonNull(getView()).findViewById(R.id.device_list_swiper);
-        swiper.setOnRefreshListener(this::askPermissionsToUseGpsOrPrepareBluetooth);
+        swiper.setOnRefreshListener(this::prepareBluetoothAndScanForDevices);
     }
 
     private void scanForDevices() {
@@ -102,37 +96,6 @@ public class SelectDeviceFragment extends Fragment {
         }
     }
 
-    private void askPermissionsToUseGpsOrPrepareBluetooth() {
-        if (hasPermissionToUseGps()) {
-            prepareBluetoothAndScanForDevices();
-        } else {
-            askPermissionToUseGps();
-        }
-    }
-
-    @NonNull
-    private Boolean hasPermissionToUseGps() {
-        return ContextCompat.checkSelfPermission(Objects.requireNonNull(getContext()),
-                Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED;
-    }
-
-    private void askPermissionToUseGps() {
-        ActivityCompat.requestPermissions(Objects.requireNonNull(getActivity()), new String[]{
-                Manifest.permission.ACCESS_FINE_LOCATION
-        }, PERMISSION_ACCESS_FINE_LOCATION);
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        switch (requestCode) {
-            case PERMISSION_ACCESS_FINE_LOCATION:
-                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    prepareBluetoothAndScanForDevices();
-                }
-                break;
-        }
-    }
-
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         switch (requestCode) {
@@ -176,7 +139,7 @@ public class SelectDeviceFragment extends Fragment {
         super.onActivityCreated(savedInstanceState);
         makeSwiper();
         initiateBroadcastReceiver();
-        askPermissionsToUseGpsOrPrepareBluetooth();
+        prepareBluetoothAndScanForDevices();
     }
 
     public interface DeviceListFragmentInteractionListener {
