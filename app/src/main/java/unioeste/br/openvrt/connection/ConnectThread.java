@@ -58,6 +58,7 @@ public class ConnectThread extends Thread {
         onConnecting();
         try {
             BluetoothSocket socket = device.createRfcommSocketToServiceRecord(uuid);
+            socket.connect();
             onConnected(socket);
         } catch (IOException e) {
             onCannotConnect();

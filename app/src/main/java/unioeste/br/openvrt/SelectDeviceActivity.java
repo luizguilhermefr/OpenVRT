@@ -36,23 +36,28 @@ public class SelectDeviceActivity extends AppCompatActivity implements SelectDev
     }
 
     private void onConnecting() {
-        snackbar.setText(getString(R.string.connecting, selectedDevice.getName()));
-        snackbar.setAction("", v -> {
-            // No action
+        runOnUiThread(() -> {
+            snackbar.setText(getString(R.string.connecting, selectedDevice.getName()));
+            snackbar.setAction("", v -> {
+                // No action
+            });
+            snackbar.show();
         });
-        snackbar.show();
     }
 
     private void onConnected(BluetoothSocket socket) {
         System.out.println("<BT> Connected.");
         this.socket = socket;
+        System.out.println(this.socket);
     }
 
     private void onConnectionError() {
-        selectDeviceFragment.unlockList();
-        snackbar.setText(getString(R.string.error_connecting, selectedDevice.getName()));
-        snackbar.setAction(getString(R.string.retry), v -> onSelectDevice(selectedDevice));
-        snackbar.show();
+        runOnUiThread(() -> {
+            selectDeviceFragment.unlockList();
+            snackbar.setText(getString(R.string.error_connecting, selectedDevice.getName()));
+            snackbar.setAction(getString(R.string.retry), v -> onSelectDevice(selectedDevice));
+            snackbar.show();
+        });
     }
 
     private void connect() {
@@ -65,7 +70,7 @@ public class SelectDeviceActivity extends AppCompatActivity implements SelectDev
     }
 
     private void makeSnackbar() {
-        snackbar = Snackbar.make(findViewById(R.id.device_list_swiper), "", Snackbar.LENGTH_INDEFINITE);
+        snackbar = Snackbar.make(findViewById(R.id.device_fragment_container), "", Snackbar.LENGTH_INDEFINITE);
     }
 
     @Override
