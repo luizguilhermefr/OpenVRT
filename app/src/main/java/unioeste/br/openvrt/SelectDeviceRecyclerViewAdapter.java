@@ -40,14 +40,19 @@ public class SelectDeviceRecyclerViewAdapter extends RecyclerView.Adapter<Select
         holder.mNameView.setEnabled(!locked);
 
         holder.mView.setOnClickListener(v -> {
-            if (mListener != null) {
+            if (mListener != null && !locked) {
                 mListener.onDeviceListFragmentInteraction(holder.mItem);
             }
         });
     }
 
-    private void lock() {
+    public void lock() {
         locked = true;
+        notifyDataSetChanged();
+    }
+
+    public void unlock() {
+        locked = false;
         notifyDataSetChanged();
     }
 

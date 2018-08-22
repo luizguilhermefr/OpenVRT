@@ -70,6 +70,14 @@ public class SelectDeviceFragment extends Fragment {
         });
     }
 
+    public void lockList() {
+        mAdapter.lock();
+    }
+
+    public void unlockList() {
+        mAdapter.unlock();
+    }
+
     private void onDiscoveryFinished() {
         Objects.requireNonNull(getActivity()).runOnUiThread(() -> swiper.setRefreshing(false));
     }
