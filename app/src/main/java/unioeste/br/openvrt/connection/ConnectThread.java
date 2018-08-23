@@ -35,9 +35,9 @@ public class ConnectThread extends Thread {
         }
     }
 
-    private void onConnected(BluetoothSocket socket) {
+    private void onConnected(ConnectedThread connectedThread) {
         if (connectedListener != null) {
-            connectedListener.onConnected(socket);
+            connectedListener.onConnected(connectedThread);
         }
     }
 
@@ -59,7 +59,10 @@ public class ConnectThread extends Thread {
         try {
             BluetoothSocket socket = device.createRfcommSocketToServiceRecord(uuid);
             socket.connect();
-            onConnected(socket);
+            ConnectedThread connectedThread = ConnectedThread.getInstance();
+            connectedThread.setConnection(socket);
+            connectedThread.start();
+            onConnected(connectedThread);
         } catch (IOException e) {
             e.printStackTrace();
             onCannotConnect();
@@ -75,6 +78,6 @@ public class ConnectThread extends Thread {
     }
 
     public interface OnConnectedListener {
-        void onConnected(BluetoothSocket socket);
+        void onConnected(ConnectedThread connectedThread);
     }
 }

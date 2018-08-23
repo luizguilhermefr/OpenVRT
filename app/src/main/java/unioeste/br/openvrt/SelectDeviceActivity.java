@@ -1,7 +1,6 @@
 package unioeste.br.openvrt;
 
 import android.bluetooth.BluetoothDevice;
-import android.bluetooth.BluetoothSocket;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -9,8 +8,8 @@ import android.support.design.widget.Snackbar;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
 import unioeste.br.openvrt.connection.ConnectThread;
+import unioeste.br.openvrt.connection.ConnectedThread;
 
-import java.io.IOException;
 import java.util.UUID;
 
 public class SelectDeviceActivity extends AppCompatActivity implements SelectDeviceFragment.DeviceListFragmentInteractionListener {
@@ -19,7 +18,7 @@ public class SelectDeviceActivity extends AppCompatActivity implements SelectDev
 
     private BluetoothDevice selectedDevice;
 
-    private BluetoothSocket socket;
+    private ConnectedThread connectedThread;
 
     private Snackbar snackbar;
 
@@ -45,10 +44,9 @@ public class SelectDeviceActivity extends AppCompatActivity implements SelectDev
         });
     }
 
-    private void onConnected(BluetoothSocket socket) {
+    private void onConnected(ConnectedThread connectedThread) {
         System.out.println("<BT> Connected.");
-        this.socket = socket;
-        System.out.println(this.socket);
+        this.connectedThread = connectedThread;
     }
 
     private void onConnectionError() {
@@ -76,12 +74,12 @@ public class SelectDeviceActivity extends AppCompatActivity implements SelectDev
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        if (socket != null) {
-            try {
-                socket.close();
-            } catch (IOException ignored) {
-                //
-            }
+        if (connectedThread != null) {
+//            try {
+//                socket.close();
+//            } catch (IOException ignored) {
+//                //
+//            }
         }
     }
 

@@ -9,7 +9,7 @@ import java.io.OutputStream;
 
 public class ConnectedThread extends Thread {
 
-    private static int MSG_LEN = 255;
+    private static ConnectedThread instance;
 
     private OnMessageReceivedListener messageReceivedListener;
 
@@ -21,9 +21,24 @@ public class ConnectedThread extends Thread {
 
     private OutputStream ostream;
 
+    private BluetoothSocket socket;
+
     private boolean shouldDie = false;
 
-    public ConnectedThread(@NonNull BluetoothSocket socket) throws IOException {
+    private ConnectedThread() {
+        //
+    }
+
+    public static ConnectedThread getInstance() {
+        if (instance == null) {
+            instance = new ConnectedThread();
+        }
+
+        return instance;
+    }
+
+    public void setConnection(@NonNull BluetoothSocket socket) throws IOException {
+        this.socket = socket;
         this.istream = socket.getInputStream();
         this.ostream = socket.getOutputStream();
     }
@@ -41,7 +56,7 @@ public class ConnectedThread extends Thread {
     }
 
     private boolean messageReady() throws IOException {
-        return istream.available() >= MSG_LEN;
+        return istream.available() >= ProtocolUtils.PACKET_SIZE;
     }
 
     private void onMessageReceived(String message) {
@@ -74,14 +89,28 @@ public class ConnectedThread extends Thread {
         }
     }
 
+    private void bury() {
+        try {
+            istream.close();
+            ostream.close();
+            socket.close();
+        } catch (IOException ignored) {
+            //
+        }
+    }
+
     @Override
     public void run() {
-        byte[] buffer = new byte[MSG_LEN]; // TODO: Replace magic number with const
+        if (istream == null || ostream == null) {
+            throw new IllegalArgumentException("Must call setConnection() before start.");
+        }
+
+        byte[] buffer = new byte[ProtocolUtils.PACKET_SIZE];
         int bytesRead;
         while (!shouldDie) {
             try {
                 if (messageReady()) {
-                    bytesRead = istream.read(buffer, 0, MSG_LEN);
+                    bytesRead = istream.read(buffer, 0, ProtocolUtils.PACKET_SIZE);
                     if (bytesRead > 0) {
                         onMessageReceived(new String(buffer, 0, bytesRead));
                     } else {
@@ -92,6 +121,7 @@ public class ConnectedThread extends Thread {
                 onSocketReceiveError();
             }
         }
+        bury();
     }
 
     public interface OnMessageReceivedListener {
