@@ -2,6 +2,9 @@ package unioeste.br.openvrt.connection;
 
 import android.bluetooth.BluetoothSocket;
 import android.support.annotation.NonNull;
+import unioeste.br.openvrt.connection.messages.Message;
+import unioeste.br.openvrt.connection.messages.MessageFactory;
+import unioeste.br.openvrt.connection.messages.exception.InvalidMessageException;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -56,12 +59,17 @@ public class ConnectedThread extends Thread {
     }
 
     private boolean messageReady() throws IOException {
-        return istream.available() >= ProtocolUtils.PACKET_SIZE;
+        return istream.available() >= MessageFactory.PACKET_SIZE;
     }
 
-    private void onMessageReceived(String message) {
+    private void onMessageReceived(byte[] buffer) {
         if (messageReceivedListener != null) {
-            messageReceivedListener.onMessageReceived(message);
+            try {
+                Message message = MessageFactory.make(buffer);
+                messageReceivedListener.onMessageReceived(message);
+            } catch (InvalidMessageException e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -81,9 +89,9 @@ public class ConnectedThread extends Thread {
         shouldDie = true;
     }
 
-    public void write(byte[] message) {
+    public void write(Message message) {
         try {
-            ostream.write(message);
+            ostream.write(message.toBytes());
         } catch (IOException e) {
             onSocketSendError();
         }
@@ -104,17 +112,16 @@ public class ConnectedThread extends Thread {
         if (istream == null || ostream == null) {
             throw new IllegalArgumentException("Must call setConnection() before start.");
         }
-
-        byte[] buffer = new byte[ProtocolUtils.PACKET_SIZE];
+        byte[] buffer = new byte[MessageFactory.PACKET_SIZE];
         int bytesRead;
         while (!shouldDie) {
             try {
                 if (messageReady()) {
-                    bytesRead = istream.read(buffer, 0, ProtocolUtils.PACKET_SIZE);
+                    bytesRead = istream.read(buffer, 0, MessageFactory.PACKET_SIZE);
                     if (bytesRead > 0) {
-                        onMessageReceived(new String(buffer, 0, bytesRead));
+                        onMessageReceived(buffer);
                     } else {
-                        // TODO: Cannot read all bytes?
+                        // TODO: Cannot read?
                     }
                 }
             } catch (IOException e) {
@@ -125,7 +132,7 @@ public class ConnectedThread extends Thread {
     }
 
     public interface OnMessageReceivedListener {
-        void onMessageReceived(String message);
+        void onMessageReceived(Message message);
     }
 
     public interface OnSocketReceiveErrorListener {

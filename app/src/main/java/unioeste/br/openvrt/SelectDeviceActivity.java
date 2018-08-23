@@ -75,11 +75,7 @@ public class SelectDeviceActivity extends AppCompatActivity implements SelectDev
     protected void onDestroy() {
         super.onDestroy();
         if (connectedThread != null) {
-//            try {
-//                socket.close();
-//            } catch (IOException ignored) {
-//                //
-//            }
+            connectedThread.cancel();
         }
     }
 
