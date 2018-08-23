@@ -61,6 +61,7 @@ public class ConnectThread extends Thread {
             socket.connect();
             onConnected(socket);
         } catch (IOException e) {
+            e.printStackTrace();
             onCannotConnect();
         }
     }
