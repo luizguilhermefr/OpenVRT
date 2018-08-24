@@ -5,6 +5,5 @@
     <color name="colorAccent">#ffca28</color>
     <color name="colorLightBackground">#e0e0e0</color>
     <color name="colorLightBackgroundTransparent">#7fe0e0e0</color>
-    <color name="colorStart">#448aff</color>
     <color name="colorStop">#e53935</color>
 </resources>

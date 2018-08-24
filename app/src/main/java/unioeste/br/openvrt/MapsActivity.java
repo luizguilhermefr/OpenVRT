@@ -140,15 +140,19 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
     private void setApplying() {
-        fab.setOnClickListener(v -> setNotApplying());
-        fab.setBackgroundColor(ContextCompat.getColor(getApplicationContext(), R.color.colorStop));
-        fab.setImageResource(R.drawable.close_circle);
+        runOnUiThread(() -> {
+            fab.setOnClickListener(v -> setNotApplying());
+            fab.setBackgroundColor(ContextCompat.getColor(getApplicationContext(), R.color.colorStop));
+            fab.setImageResource(R.drawable.close_circle);
+        });
     }
 
     private void setNotApplying() {
-        fab.setOnClickListener(v -> askMeasurement());
-        fab.setBackgroundColor(ContextCompat.getColor(getApplicationContext(), R.color.colorStart));
-        fab.setImageResource(R.drawable.send);
+        runOnUiThread(() -> {
+            fab.setOnClickListener(v -> askMeasurement());
+            fab.setBackgroundColor(ContextCompat.getColor(getApplicationContext(), R.color.colorAccent));
+            fab.setImageResource(R.drawable.send);
+        });
     }
 
     private void askMeasurement() {
@@ -162,10 +166,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
     private void createFloatingActionButton() {
-        fab = findViewById(R.id.start_fab);
-        fab.setOnClickListener(v -> askMeasurement());
-        fab.bringToFront();
-        fab.setVisibility(FloatingActionButton.VISIBLE);
+        runOnUiThread(() -> {
+            fab = findViewById(R.id.start_fab);
+            fab.setOnClickListener(v -> askMeasurement());
+            fab.bringToFront();
+            fab.setVisibility(FloatingActionButton.VISIBLE);
+        });
     }
 
     @Override
