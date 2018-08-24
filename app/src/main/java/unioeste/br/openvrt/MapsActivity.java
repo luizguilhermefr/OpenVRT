@@ -51,19 +51,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     private TextView accuracyIndicator;
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        Intent intent = getIntent();
-        mapLocation = intent.getStringExtra("map");
-        setContentView(R.layout.activity_maps);
-        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
-                .findFragmentById(R.id.map);
-        rateIndicator = findViewById(R.id.rate_indicator);
-        accuracyIndicator = findViewById(R.id.accuracy_indicator);
-        mapFragment.getMapAsync(this);
-    }
-
     private void parseMapToJson(String mapStr) {
         try {
             JSONObject mapContent = new JSONObject(mapStr);
@@ -140,6 +127,19 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         currentAccuracy = nextAccuracy;
         String accuracyString = getString(R.string.current_precision, currentAccuracy);
         runOnUiThread(() -> accuracyIndicator.setText(accuracyString));
+    }
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        Intent intent = getIntent();
+        mapLocation = intent.getStringExtra("map");
+        setContentView(R.layout.activity_maps);
+        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
+                .findFragmentById(R.id.map);
+        rateIndicator = findViewById(R.id.rate_indicator);
+        accuracyIndicator = findViewById(R.id.accuracy_indicator);
+        mapFragment.getMapAsync(this);
     }
 
     @Override

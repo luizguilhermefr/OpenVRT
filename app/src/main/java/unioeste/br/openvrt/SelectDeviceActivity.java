@@ -22,7 +22,9 @@ public class SelectDeviceActivity extends AppCompatActivity implements SelectDev
 
     private Snackbar snackbar;
 
-    private void toMapsActivity(String mapLocation) {
+    private String mapLocation;
+
+    private void toMapsActivity() {
         Intent intent = new Intent(this, MapsActivity.class);
         intent.putExtra("map", mapLocation);
         startActivity(intent);
@@ -30,7 +32,7 @@ public class SelectDeviceActivity extends AppCompatActivity implements SelectDev
 
     private void onSelectDevice(@NonNull BluetoothDevice device) {
         selectedDevice = device;
-        selectDeviceFragment.lockList();
+        runOnUiThread(() -> selectDeviceFragment.lockList());
         connect();
     }
 
@@ -45,8 +47,12 @@ public class SelectDeviceActivity extends AppCompatActivity implements SelectDev
     }
 
     private void onConnected(ConnectedThread connectedThread) {
-        System.out.println("<BT> Connected.");
         this.connectedThread = connectedThread;
+        this.runOnUiThread(() -> {
+            snackbar.dismiss();
+            selectDeviceFragment.unlockList();
+        });
+        toMapsActivity();
     }
 
     private void onConnectionError() {
@@ -82,6 +88,8 @@ public class SelectDeviceActivity extends AppCompatActivity implements SelectDev
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Intent intent = getIntent();
+        mapLocation = intent.getStringExtra("map");
         setContentView(R.layout.activity_select_device);
         selectDeviceFragment = SelectDeviceFragment.newInstance();
         FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();

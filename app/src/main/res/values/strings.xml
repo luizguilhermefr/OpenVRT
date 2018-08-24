@@ -8,8 +8,8 @@
     <string name="ok">OK</string>
     <string name="cancel">Cancel</string>
     <string name="scanning_maps">Scanning for maps</string>
-    <string name="current_precision">Precision: %1$f ft</string>
-    <string name="current_rate" translatable="false">%1$f</string>
+    <string name="current_precision">Precision: %1$.2f ft</string>
+    <string name="current_rate" translatable="false">%1$.2f</string>
     <string name="connecting">Connecting to %1$s…</string>
     <string name="error_connecting">Error while connecting to %1$s.</string>
     <string name="retry">Retry</string>

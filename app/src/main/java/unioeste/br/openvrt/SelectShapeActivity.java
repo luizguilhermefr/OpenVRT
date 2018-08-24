@@ -14,10 +14,11 @@ public class SelectShapeActivity extends AppCompatActivity implements SelectShap
 
     private static final int PERMISSION_BLUETOOTH = 3;
 
-    private String selectedShape;
+    private String selectedShapeLocation;
 
     private void toDevicesActivity() {
         Intent intent = new Intent(this, SelectDeviceActivity.class);
+        intent.putExtra("map", selectedShapeLocation);
         startActivity(intent);
     }
 
@@ -31,14 +32,6 @@ public class SelectShapeActivity extends AppCompatActivity implements SelectShap
         ActivityCompat.requestPermissions(this, new String[]{
                 Manifest.permission.BLUETOOTH_ADMIN
         }, PERMISSION_BLUETOOTH);
-    }
-
-    private void askPermissionsToBluetoothOrGoToSelectDeviceActivity() {
-        if (hasPermissionToBluetooth()) {
-            toDevicesActivity();
-        } else {
-            askPermissionToBluetooth();
-        }
     }
 
     @Override
@@ -63,7 +56,7 @@ public class SelectShapeActivity extends AppCompatActivity implements SelectShap
 
     @Override
     public void onShapeListFragmentInteraction(String item) {
-        selectedShape = item;
-        askPermissionsToBluetoothOrGoToSelectDeviceActivity();
+        selectedShapeLocation = item;
+        toDevicesActivity();
     }
 }

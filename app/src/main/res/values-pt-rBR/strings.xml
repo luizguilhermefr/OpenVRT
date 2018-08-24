@@ -8,7 +8,7 @@
     <string name="ok">OK</string>
     <string name="cancel">Cancelar</string>
     <string name="scanning_maps">Procurando mapas</string>
-    <string name="current_precision">Precisão: %1$f pés</string>
+    <string name="current_precision">Precisão: %1$.2f pés</string>
     <string name="connecting">Conectando-se a %1$s…</string>
     <string name="error_connecting">Erro ao conectar-se com %1$s.</string>
     <string name="retry">Tentar novamente</string>
