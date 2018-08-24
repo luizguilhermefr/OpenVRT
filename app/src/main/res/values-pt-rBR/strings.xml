@@ -12,4 +12,5 @@
     <string name="connecting">Conectando-se a %1$s…</string>
     <string name="error_connecting">Erro ao conectar-se com %1$s.</string>
     <string name="retry">Tentar novamente</string>
+    <string name="start">Iniciar</string>
 </resources>

@@ -17,12 +17,12 @@
     <include layout="@layout/fragment_empty_state" />
 
     <android.support.design.widget.FloatingActionButton
-        android:id="@+id/fab"
+        android:id="@+id/select_shape_fab"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
         android:layout_margin="@dimen/fab_margin"
         android:onClick="askPermissionsOrGoToSelectShapeActivity"
-        app:srcCompat="@android:drawable/ic_dialog_map" />
+        app:srcCompat="@drawable/map_search" />
 
 </android.support.design.widget.CoordinatorLayout>

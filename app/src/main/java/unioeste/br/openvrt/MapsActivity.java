@@ -1,6 +1,7 @@
 package unioeste.br.openvrt;
 
 import android.annotation.SuppressLint;
+import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.location.Location;
@@ -9,7 +10,9 @@ import android.location.LocationManager;
 import android.location.LocationProvider;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.FragmentActivity;
+import android.support.v4.content.ContextCompat;
 import android.widget.TextView;
 import com.google.android.gms.maps.*;
 import com.google.android.gms.maps.model.LatLng;
@@ -19,6 +22,7 @@ import com.google.maps.android.data.geojson.GeoJsonLayer;
 import com.google.maps.android.data.geojson.GeoJsonPolygon;
 import org.json.JSONException;
 import org.json.JSONObject;
+import unioeste.br.openvrt.connection.ConnectedThread;
 import unioeste.br.openvrt.exception.InvalidOpenVRTGeoJsonException;
 import unioeste.br.openvrt.file.PrescriptionMapReader;
 import unioeste.br.openvrt.file.ProtocolDictionary;
@@ -28,6 +32,10 @@ import unioeste.br.openvrt.map.LayerValidator;
 import java.util.Objects;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback, LocationListener {
+
+    private static final long MIN_TIME = 500;
+
+    private static final float MIN_DISTANCE = 1;
 
     private GoogleMap googleMap;
 
@@ -39,10 +47,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     private FeatureStyler featureStyler;
 
-    private static final long MIN_TIME = 500;
-
-    private static final float MIN_DISTANCE = 1;
-
     private float currentRate = 0;
 
     private float currentAccuracy = 0;
@@ -50,6 +54,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private TextView rateIndicator;
 
     private TextView accuracyIndicator;
+
+    private ConnectedThread connectedThread;
+
+    private FloatingActionButton fab;
+
+    private int selectedMeasurement;
 
     private void parseMapToJson(String mapStr) {
         try {
@@ -129,6 +139,35 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         runOnUiThread(() -> accuracyIndicator.setText(accuracyString));
     }
 
+    private void setApplying() {
+        fab.setOnClickListener(v -> setNotApplying());
+        fab.setBackgroundColor(ContextCompat.getColor(getApplicationContext(), R.color.colorStop));
+        fab.setImageResource(R.drawable.close_circle);
+    }
+
+    private void setNotApplying() {
+        fab.setOnClickListener(v -> askMeasurement());
+        fab.setBackgroundColor(ContextCompat.getColor(getApplicationContext(), R.color.colorStart));
+        fab.setImageResource(R.drawable.send);
+    }
+
+    private void askMeasurement() {
+        AlertDialog.Builder measurementDialogBuilder = new AlertDialog.Builder(this);
+        measurementDialogBuilder.setTitle(R.string.rate_measurement);
+        measurementDialogBuilder.setSingleChoiceItems(R.array.measurements, 0, (dialogInterface, i) -> selectedMeasurement = i);
+        measurementDialogBuilder.setPositiveButton(R.string.ok, (dialog, id) -> setApplying());
+        measurementDialogBuilder.setNegativeButton(R.string.cancel, (dialog, id
+        ) -> setNotApplying());
+        measurementDialogBuilder.create().show();
+    }
+
+    private void createFloatingActionButton() {
+        fab = findViewById(R.id.start_fab);
+        fab.setOnClickListener(v -> askMeasurement());
+        fab.bringToFront();
+        fab.setVisibility(FloatingActionButton.VISIBLE);
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -140,6 +179,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         rateIndicator = findViewById(R.id.rate_indicator);
         accuracyIndicator = findViewById(R.id.accuracy_indicator);
         mapFragment.getMapAsync(this);
+        createFloatingActionButton();
     }
 
     @Override

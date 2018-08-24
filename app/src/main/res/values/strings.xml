@@ -13,4 +13,5 @@
     <string name="connecting">Connecting to %1$s…</string>
     <string name="error_connecting">Error while connecting to %1$s.</string>
     <string name="retry">Retry</string>
+    <string name="start">Start</string>
 </resources>
