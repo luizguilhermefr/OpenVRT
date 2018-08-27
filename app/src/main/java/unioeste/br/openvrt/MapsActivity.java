@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.ColorStateList;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -142,7 +143,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private void setApplying() {
         runOnUiThread(() -> {
             fab.setOnClickListener(v -> setNotApplying());
-            fab.setBackgroundColor(ContextCompat.getColor(getApplicationContext(), R.color.colorStop));
+            int color = ContextCompat.getColor(getApplicationContext(), R.color.colorStop);
+            fab.setBackgroundTintList(ColorStateList.valueOf(color));
             fab.setImageResource(R.drawable.close_circle);
         });
     }
@@ -150,7 +152,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private void setNotApplying() {
         runOnUiThread(() -> {
             fab.setOnClickListener(v -> askMeasurement());
-            fab.setBackgroundColor(ContextCompat.getColor(getApplicationContext(), R.color.colorAccent));
+            int color = ContextCompat.getColor(getApplicationContext(), R.color.colorAccent);
+            fab.setBackgroundTintList(ColorStateList.valueOf(color));
             fab.setImageResource(R.drawable.send);
         });
     }
