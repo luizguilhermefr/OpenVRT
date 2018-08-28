@@ -1,6 +1,7 @@
 package unioeste.br.openvrt.connection.message;
 
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import unioeste.br.openvrt.connection.exception.InvalidMessageException;
 
 import java.util.Arrays;
@@ -30,7 +31,7 @@ public abstract class Message {
     };
 
     @NonNull
-    private static Opcode parseOpcodeFromRawMessage(@NonNull byte[] message) {
+    private static Opcode parseOpcodeFromRawMessageResponse(@NonNull byte[] message) {
         String opcodeStr = String.valueOf(message[SIGNATURE.length + VERSION_MAJOR.length + VERSION_MINOR.length + RESERVED.length]);
         return Opcode.valueOf(opcodeStr);
     }
@@ -53,7 +54,7 @@ public abstract class Message {
         }
 
         try {
-            Opcode opcode = parseOpcodeFromRawMessage(content);
+            Opcode opcode = parseOpcodeFromRawMessageResponse(content);
         } catch (IllegalArgumentException e) {
             return false;
         }
@@ -62,12 +63,13 @@ public abstract class Message {
         return true;
     }
 
-    public static Message make(byte[] content) throws InvalidMessageException {
+    @Nullable
+    public static Message makeFromResponse(byte[] content) throws InvalidMessageException {
         if (!isValid(content)) {
             throw new InvalidMessageException();
         }
 
-        switch (parseOpcodeFromRawMessage(content)) {
+        switch (parseOpcodeFromRawMessageResponse(content)) {
             case ACK_OP:
                 return AcknowledgedMessage.getInstance();
             case REFUSE_OP:
@@ -102,8 +104,8 @@ public abstract class Message {
     }
 
     public byte[] toBytes() {
-        byte[] data = data();
         byte[] header = header();
+        byte[] data = data();
         byte[] message = Arrays.copyOf(header, header.length + data.length);
         System.arraycopy(data, 0, message, header.length, data.length);
 

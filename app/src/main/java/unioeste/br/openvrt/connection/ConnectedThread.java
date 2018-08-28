@@ -31,7 +31,7 @@ public class ConnectedThread extends Thread {
         //
     }
 
-    public static ConnectedThread getInstance() {
+    static ConnectedThread getInstance() {
         if (instance == null) {
             instance = new ConnectedThread();
         }
@@ -64,7 +64,7 @@ public class ConnectedThread extends Thread {
     private void onMessageReceived(byte[] buffer) {
         if (messageReceivedListener != null) {
             try {
-                Message message = Message.make(buffer);
+                Message message = Message.makeFromResponse(buffer);
                 messageReceivedListener.onMessageReceived(message);
             } catch (InvalidMessageException e) {
                 e.printStackTrace();

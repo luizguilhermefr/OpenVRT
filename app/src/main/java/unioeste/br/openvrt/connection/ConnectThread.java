@@ -2,6 +2,9 @@ package unioeste.br.openvrt.connection;
 
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
+import unioeste.br.openvrt.connection.exception.HandshakeException;
+import unioeste.br.openvrt.connection.message.HandshakeMessage;
+import unioeste.br.openvrt.connection.message.Message;
 
 import java.io.IOException;
 import java.util.UUID;
@@ -17,6 +20,10 @@ public class ConnectThread extends Thread {
     private UUID uuid;
 
     private BluetoothDevice device;
+
+    private ConnectedThread connectedThread;
+
+    private boolean handshaked = false;
 
     public ConnectThread(BluetoothDevice device, UUID uuid) {
         this.device = device;
@@ -35,7 +42,7 @@ public class ConnectThread extends Thread {
         }
     }
 
-    private void onConnected(ConnectedThread connectedThread) {
+    private void onConnected() {
         if (connectedListener != null) {
             connectedListener.onConnected(connectedThread);
         }
@@ -53,17 +60,56 @@ public class ConnectThread extends Thread {
         this.cannotConnectListener = cannotConnectListener;
     }
 
+    private void handshakeSleep() {
+        try {
+            final int HANDSHAKE_TIMEOUT = 1000;
+            Thread.sleep(HANDSHAKE_TIMEOUT);
+        } catch (InterruptedException e) {
+            //
+        }
+    }
+
+    private synchronized void handshake() throws HandshakeException {
+        bindToHandshake();
+        connectedThread.write(HandshakeMessage.getInstance());
+        handshakeSleep();
+        unbindToHandshake();
+        if (!handshaked) {
+            throw new HandshakeException();
+        }
+    }
+
+    private synchronized void handshakeListener(Message message) {
+        if (message instanceof HandshakeMessage) {
+            handshaked = true;
+            interrupt();
+        }
+    }
+
+    private void bindToHandshake() {
+        connectedThread.setOnMessageReceivedListener(this::handshakeListener);
+        connectedThread.setOnSocketSendErrorListener(this::onCannotConnect);
+        connectedThread.setOnSocketErrorListener(this::onCannotConnect);
+    }
+
+    private void unbindToHandshake() {
+        connectedThread.setOnSocketErrorListener(null);
+        connectedThread.setOnSocketSendErrorListener(null);
+        connectedThread.setOnMessageReceivedListener(null);
+    }
+
     @Override
     public void run() {
         onConnecting();
         try {
             BluetoothSocket socket = device.createRfcommSocketToServiceRecord(uuid);
             socket.connect();
-            ConnectedThread connectedThread = ConnectedThread.getInstance();
+            connectedThread = ConnectedThread.getInstance();
             connectedThread.setConnection(socket);
             connectedThread.start();
-            onConnected(connectedThread);
-        } catch (IOException e) {
+            handshake();
+            onConnected();
+        } catch (IOException | HandshakeException e) {
             e.printStackTrace();
             onCannotConnect();
         }
