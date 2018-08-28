@@ -1,4 +1,4 @@
-package unioeste.br.openvrt.connection.messages.exception;
+package unioeste.br.openvrt.connection.exception;
 
 public class InvalidMessageException extends Exception {
     public InvalidMessageException() {

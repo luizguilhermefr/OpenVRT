@@ -2,9 +2,8 @@ package unioeste.br.openvrt.connection;
 
 import android.bluetooth.BluetoothSocket;
 import android.support.annotation.NonNull;
-import unioeste.br.openvrt.connection.messages.Message;
-import unioeste.br.openvrt.connection.messages.MessageFactory;
-import unioeste.br.openvrt.connection.messages.exception.InvalidMessageException;
+import unioeste.br.openvrt.connection.exception.InvalidMessageException;
+import unioeste.br.openvrt.connection.message.Message;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -59,13 +58,13 @@ public class ConnectedThread extends Thread {
     }
 
     private boolean messageReady() throws IOException {
-        return istream.available() >= MessageFactory.PACKET_SIZE;
+        return istream.available() >= Message.MSG_LEN;
     }
 
     private void onMessageReceived(byte[] buffer) {
         if (messageReceivedListener != null) {
             try {
-                Message message = MessageFactory.make(buffer);
+                Message message = Message.make(buffer);
                 messageReceivedListener.onMessageReceived(message);
             } catch (InvalidMessageException e) {
                 e.printStackTrace();
@@ -112,12 +111,12 @@ public class ConnectedThread extends Thread {
         if (istream == null || ostream == null) {
             throw new IllegalArgumentException("Must call setConnection() before start.");
         }
-        byte[] buffer = new byte[MessageFactory.PACKET_SIZE];
+        byte[] buffer = new byte[Message.MSG_LEN];
         int bytesRead;
         while (!shouldDie) {
             try {
                 if (messageReady()) {
-                    bytesRead = istream.read(buffer, 0, MessageFactory.PACKET_SIZE);
+                    bytesRead = istream.read(buffer, 0, Message.MSG_LEN);
                     if (bytesRead > 0) {
                         onMessageReceived(buffer);
                     } else {

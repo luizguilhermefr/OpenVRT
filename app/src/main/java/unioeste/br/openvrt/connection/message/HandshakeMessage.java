@@ -1,4 +1,4 @@
-package unioeste.br.openvrt.connection.messages;
+package unioeste.br.openvrt.connection.message;
 
 import java.util.Arrays;
 
@@ -8,6 +8,7 @@ public class HandshakeMessage extends Message {
 
     private HandshakeMessage() {
         Arrays.fill(data, (byte) Character.MIN_VALUE);
+        opcode = OPCODE.HANDSHAKE;
     }
 
     public HandshakeMessage getInstance() {

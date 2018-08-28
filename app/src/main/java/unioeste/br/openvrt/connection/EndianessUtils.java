@@ -1,4 +1,4 @@
-package unioeste.br.openvrt.connection.messages;
+package unioeste.br.openvrt.connection;
 
 import android.support.annotation.NonNull;
 
