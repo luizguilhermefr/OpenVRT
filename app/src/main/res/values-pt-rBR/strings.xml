@@ -13,4 +13,7 @@
     <string name="error_connecting">Erro ao conectar-se com %1$s.</string>
     <string name="retry">Tentar novamente</string>
     <string name="start">Iniciar</string>
+    <string name="location_unavailable">Localização indisponível</string>
+    <string name="location_lost">Localização perdida</string>
+    <string name="location_estabilished">Localização estabelecida</string>
 </resources>

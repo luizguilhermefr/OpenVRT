@@ -14,4 +14,7 @@
     <string name="error_connecting">Error while connecting to %1$s.</string>
     <string name="retry">Retry</string>
     <string name="start">Start</string>
+    <string name="location_unavailable">Location unavailable</string>
+    <string name="location_lost">Location lost</string>
+    <string name="location_estabilished">Location estabilished</string>
 </resources>

@@ -12,6 +12,7 @@ import android.location.LocationProvider;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.content.ContextCompat;
 import android.widget.TextView;
@@ -59,6 +60,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private ConnectedThread connectedThread;
 
     private FloatingActionButton fab;
+
+    private Snackbar snackbar;
 
     private int selectedMeasurement;
 
@@ -177,6 +180,43 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         });
     }
 
+    private void makeSnackbar() {
+        snackbar = Snackbar.make(findViewById(R.id.map), "", Snackbar.LENGTH_LONG);
+    }
+
+    private void onRestoreLocationProvider() {
+        runOnUiThread(() -> {
+            snackbar.setDuration(Snackbar.LENGTH_LONG);
+            snackbar.setText(getString(R.string.location_estabilished));
+            snackbar.setAction("", v -> {
+                // No action
+            });
+            snackbar.show();
+        });
+    }
+
+    private void onLostLocationProvider() {
+        runOnUiThread(() -> {
+            snackbar.setDuration(Snackbar.LENGTH_LONG);
+            snackbar.setText(getString(R.string.location_lost));
+            snackbar.setAction("", v -> {
+                // No action
+            });
+            snackbar.show();
+        });
+    }
+
+    private void onLocationProviderFailure() {
+        runOnUiThread(() -> {
+            snackbar.setDuration(Snackbar.LENGTH_INDEFINITE);
+            snackbar.setText(getString(R.string.location_unavailable));
+            snackbar.setAction(getString(R.string.ok), v -> {
+                snackbar.dismiss();
+            });
+            snackbar.show();
+        });
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -189,6 +229,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         accuracyIndicator = findViewById(R.id.accuracy_indicator);
         mapFragment.getMapAsync(this);
         createFloatingActionButton();
+        makeSnackbar();
     }
 
     @Override
@@ -213,24 +254,24 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     public void onStatusChanged(String provider, int status, Bundle extras) {
         switch (status) {
             case LocationProvider.AVAILABLE:
-                //
+                onRestoreLocationProvider();
                 break;
             case LocationProvider.TEMPORARILY_UNAVAILABLE:
-                //
+                onLostLocationProvider();
                 break;
             case LocationProvider.OUT_OF_SERVICE:
-                //
+                onLocationProviderFailure();
                 break;
         }
     }
 
     @Override
     public void onProviderEnabled(String provider) {
-        // TODO: Show message?
+        onRestoreLocationProvider();
     }
 
     @Override
     public void onProviderDisabled(String provider) {
-        // TODO: Show message?
+        onLostLocationProvider();
     }
 }
