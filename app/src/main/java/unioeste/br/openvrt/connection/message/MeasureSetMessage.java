@@ -8,7 +8,7 @@ public class MeasureSetMessage extends Message {
         //
     }
 
-    public MeasureSetMessage getInstance() {
+    public static MeasureSetMessage getInstance() {
         if (instance == null) {
             instance = new MeasureSetMessage();
         }

@@ -8,7 +8,7 @@ public class RefusedMessage extends Message {
         //
     }
 
-    public RefusedMessage getInstance() {
+    public static RefusedMessage getInstance() {
         if (instance == null) {
             instance = new RefusedMessage();
         }

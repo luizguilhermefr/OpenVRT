@@ -8,7 +8,7 @@ public class HandshakeMessage extends Message {
         //
     }
 
-    public HandshakeMessage getInstance() {
+    public static HandshakeMessage getInstance() {
         if (instance == null) {
             instance = new HandshakeMessage();
         }

@@ -8,7 +8,7 @@ public class AcknowledgedMessage extends Message {
         //
     }
 
-    public AcknowledgedMessage getInstance() {
+    public static AcknowledgedMessage getInstance() {
         if (instance == null) {
             instance = new AcknowledgedMessage();
         }
