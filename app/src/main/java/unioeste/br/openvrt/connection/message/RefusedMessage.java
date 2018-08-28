@@ -1,16 +1,16 @@
 package unioeste.br.openvrt.connection.message;
 
-public class HandshakeMessage extends Message {
+public class RefusedMessage extends Message {
 
-    private static HandshakeMessage instance;
+    private static RefusedMessage instance;
 
-    private HandshakeMessage() {
+    private RefusedMessage() {
         //
     }
 
-    public HandshakeMessage getInstance() {
+    public RefusedMessage getInstance() {
         if (instance == null) {
-            instance = new HandshakeMessage();
+            instance = new RefusedMessage();
         }
 
         return instance;
@@ -23,6 +23,6 @@ public class HandshakeMessage extends Message {
 
     @Override
     protected Opcode opcode() {
-        return Opcode.HANDSHAKE;
+        return Opcode.REFUSE_OP;
     }
 }

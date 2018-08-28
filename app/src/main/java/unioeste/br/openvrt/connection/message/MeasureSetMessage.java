@@ -1,16 +1,16 @@
 package unioeste.br.openvrt.connection.message;
 
-public class HandshakeMessage extends Message {
+public class MeasureSetMessage extends Message {
 
-    private static HandshakeMessage instance;
+    private static MeasureSetMessage instance;
 
-    private HandshakeMessage() {
+    private MeasureSetMessage() {
         //
     }
 
-    public HandshakeMessage getInstance() {
+    public MeasureSetMessage getInstance() {
         if (instance == null) {
-            instance = new HandshakeMessage();
+            instance = new MeasureSetMessage();
         }
 
         return instance;
@@ -23,6 +23,6 @@ public class HandshakeMessage extends Message {
 
     @Override
     protected Opcode opcode() {
-        return Opcode.HANDSHAKE;
+        return Opcode.MEASURE_SET;
     }
 }
