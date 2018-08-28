@@ -88,13 +88,9 @@ public class ConnectThread extends Thread {
 
     private void bindToHandshake() {
         connectedThread.setOnMessageReceivedListener(this::handshakeListener);
-        connectedThread.setOnSocketSendErrorListener(this::onCannotConnect);
-        connectedThread.setOnSocketErrorListener(this::onCannotConnect);
     }
 
     private void unbindToHandshake() {
-        connectedThread.setOnSocketErrorListener(null);
-        connectedThread.setOnSocketSendErrorListener(null);
         connectedThread.setOnMessageReceivedListener(null);
     }
 
