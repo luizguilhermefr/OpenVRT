@@ -39,6 +39,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     private static final float MIN_DISTANCE = 1;
 
+    private static final float ACCURACY_OK = 10;
+
+    private static final float ACCURACY_WARN = 25;
+
     private GoogleMap googleMap;
 
     private GeoJsonLayer mapLayer;
@@ -48,10 +52,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private LocationManager locationManager;
 
     private FeatureStyler featureStyler;
-
-    private float currentRate = 0;
-
-    private float currentAccuracy = 0;
 
     private TextView rateIndicator;
 
@@ -131,16 +131,31 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         return 0;
     }
 
+    private int getAccuracyColor(Float accuracy) {
+        if (accuracy < ACCURACY_OK) {
+            return ContextCompat.getColor(getApplicationContext(), R.color.colorOk);
+        } else if (accuracy < ACCURACY_WARN) {
+            return ContextCompat.getColor(getApplicationContext(), R.color.colorWarn);
+        } else {
+            return ContextCompat.getColor(getApplicationContext(), R.color.colorDanger);
+        }
+    }
+
     private void onRateChanged(Float nextRate) {
-        currentRate = nextRate;
-        String rateString = getString(R.string.current_rate, currentRate);
+        String rateString = getString(R.string.current_rate, nextRate);
         runOnUiThread(() -> rateIndicator.setText(rateString));
     }
 
     private void onAccuracyChanged(Float nextAccuracy) {
-        currentAccuracy = nextAccuracy;
-        String accuracyString = getString(R.string.current_precision, currentAccuracy);
-        runOnUiThread(() -> accuracyIndicator.setText(accuracyString));
+        String accuracyString = getString(R.string.current_precision, nextAccuracy);
+        int accuracyColor = getAccuracyColor(nextAccuracy);
+        runOnUiThread(() -> {
+            accuracyIndicator.setTextColor(accuracyColor);
+            accuracyIndicator.setText(accuracyString);
+            if (nextAccuracy > ACCURACY_WARN) {
+                onBadAccuracy();
+            }
+        });
     }
 
     private void setApplying() {
@@ -210,6 +225,17 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         runOnUiThread(() -> {
             snackbar.setDuration(Snackbar.LENGTH_INDEFINITE);
             snackbar.setText(getString(R.string.location_unavailable));
+            snackbar.setAction(getString(R.string.ok), v -> {
+                snackbar.dismiss();
+            });
+            snackbar.show();
+        });
+    }
+
+    private void onBadAccuracy() {
+        runOnUiThread(() -> {
+            snackbar.setDuration(Snackbar.LENGTH_INDEFINITE);
+            snackbar.setText(getString(R.string.bad_accuracy));
             snackbar.setAction(getString(R.string.ok), v -> {
                 snackbar.dismiss();
             });

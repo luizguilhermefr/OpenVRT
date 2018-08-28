@@ -6,4 +6,7 @@
     <color name="colorLightBackground">#e0e0e0</color>
     <color name="colorLightBackgroundTransparent">#7fe0e0e0</color>
     <color name="colorStop">#e53935</color>
+    <color name="colorOk">#64dd17</color>
+    <color name="colorWarn">#ffea00</color>
+    <color name="colorDanger">#d50000</color>
 </resources>

@@ -8,7 +8,7 @@
     <string name="ok">OK</string>
     <string name="cancel">Cancelar</string>
     <string name="scanning_maps">Procurando mapas</string>
-    <string name="current_precision">Precisão: %1$.2f pés</string>
+    <string name="current_precision">Precisão: %1$.2f m</string>
     <string name="connecting">Conectando-se a %1$s…</string>
     <string name="error_connecting">Erro ao conectar-se com %1$s.</string>
     <string name="retry">Tentar novamente</string>
@@ -16,4 +16,5 @@
     <string name="location_unavailable">Localização indisponível</string>
     <string name="location_lost">Localização perdida</string>
     <string name="location_estabilished">Localização estabelecida</string>
+    <string name="bad_accuracy">Baixa precisão de localização!</string>
 </resources>

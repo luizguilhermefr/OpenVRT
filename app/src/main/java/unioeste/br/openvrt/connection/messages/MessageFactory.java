@@ -4,7 +4,7 @@ import unioeste.br.openvrt.connection.messages.exception.InvalidMessageException
 
 public class MessageFactory {
 
-    public static final int PACKET_SIZE = 255;
+    public static final int PACKET_SIZE = 32;
 
     private static boolean isValid(byte[] content) {
         return false;
