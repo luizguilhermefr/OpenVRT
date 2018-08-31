@@ -141,6 +141,10 @@ public abstract class Message {
         return message;
     }
 
+    public int getId () {
+        return EndianessUtils.littleEndianBytesToInt(id());
+    }
+
     protected abstract byte[] id();
 
     protected abstract byte[] data();

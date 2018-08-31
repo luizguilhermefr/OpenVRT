@@ -88,13 +88,7 @@ public class ConnectedThread extends Thread {
         shouldDie = true;
     }
 
-    public void write(Message message) {
-        try {
-            ostream.write(message.toBytes());
-        } catch (IOException e) {
-            onSocketSendError();
-        }
-    }
+
 
     private void bury() {
         try {
@@ -106,11 +100,15 @@ public class ConnectedThread extends Thread {
         }
     }
 
-    @Override
-    public void run() {
+    private void checkConnectionReady() throws IllegalArgumentException {
         if (istream == null || ostream == null) {
             throw new IllegalArgumentException("Must call setConnection() before start.");
         }
+    }
+
+    @Override
+    public void run() {
+        checkConnectionReady();
         byte[] buffer = new byte[Message.MSG_LEN];
         int bytesRead;
         while (!shouldDie) {

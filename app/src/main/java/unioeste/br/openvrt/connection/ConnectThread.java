@@ -71,7 +71,7 @@ public class ConnectThread extends Thread {
 
     private synchronized void handshake() throws HandshakeException {
         bindToHandshake();
-        connectedThread.write(HandshakeMessage.getInstance());
+        connectedThread.write(new HandshakeMessage());
         handshakeSleep();
         unbindToHandshake();
         if (!handshaked) {
@@ -105,7 +105,11 @@ public class ConnectThread extends Thread {
             connectedThread.start();
             handshake();
             onConnected();
-        } catch (IOException | HandshakeException e) {
+        } catch (HandshakeException e) {
+            e.printStackTrace();
+            connectedThread.cancel();
+            onCannotConnect();
+        } catch (IOException e) {
             e.printStackTrace();
             onCannotConnect();
         }
