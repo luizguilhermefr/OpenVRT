@@ -2,13 +2,13 @@
 <android.support.v4.widget.SwipeRefreshLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/device_list_swiper"
+    android:ourId="@+ourId/device_list_swiper"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".SelectDeviceFragment">
 
     <android.support.v7.widget.RecyclerView
-        android:id="@+id/device_list"
+        android:ourId="@+ourId/device_list"
         android:name="unioeste.br.openvrt.DeviceFragment"
         android:layout_width="match_parent"
         android:layout_height="match_parent"

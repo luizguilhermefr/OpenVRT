@@ -1,19 +1,31 @@
 package unioeste.br.openvrt.connection.message;
 
+import unioeste.br.openvrt.connection.EndianessUtils;
+import unioeste.br.openvrt.connection.IdFactory;
+
+/**
+ * Signal that the device wants to start a communication.
+ * Has no data content.
+ */
 public class HandshakeMessage extends Message {
 
-    private static HandshakeMessage instance;
+    private int ourId;
 
-    private HandshakeMessage() {
-        //
+    public HandshakeMessage(int ourId) {
+        this.ourId = ourId;
     }
 
-    public static HandshakeMessage getInstance() {
-        if (instance == null) {
-            instance = new HandshakeMessage();
-        }
+    public HandshakeMessage() {
+        this.ourId = IdFactory.getInstance().next();
+    }
 
-        return instance;
+    public static HandshakeMessage makeFromRaw(byte[] rawMessage) {
+        return null;
+    }
+
+    @Override
+    protected byte[] id() {
+        return EndianessUtils.intToLittleEndianBytes(ourId);
     }
 
     @Override

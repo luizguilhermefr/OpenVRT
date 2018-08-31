@@ -1,15 +1,33 @@
 package unioeste.br.openvrt.connection.message;
 
 import android.support.annotation.NonNull;
+import unioeste.br.openvrt.connection.EndianessUtils;
+import unioeste.br.openvrt.connection.IdFactory;
 
 import java.util.Arrays;
 
+/**
+ * Inform to the applier which measurement form should be used.
+ */
 public class SetMeasurementMessage extends Message {
 
     private Measurement measurement;
 
+    private int ourId;
+
     public SetMeasurementMessage(Measurement measurement) {
+        this.ourId = IdFactory.getInstance().next();
         this.measurement = measurement;
+    }
+
+    public SetMeasurementMessage(int ourId, Measurement measurement) {
+        this.ourId = ourId;
+        this.measurement = measurement;
+    }
+
+    @Override
+    protected byte[] id() {
+        return EndianessUtils.intToLittleEndianBytes(ourId);
     }
 
     @Override
