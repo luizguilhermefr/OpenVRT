@@ -1,5 +1,6 @@
 package unioeste.br.openvrt.connection.message;
 
+import android.support.annotation.NonNull;
 import unioeste.br.openvrt.connection.EndianessUtils;
 import unioeste.br.openvrt.connection.IdFactory;
 
@@ -25,8 +26,17 @@ public class AcknowledgedMessage extends Message {
         this.acknowledgedId = acknowledgedId;
     }
 
-    public static AcknowledgedMessage makeFromRaw(byte[] rawMessage) {
-        return null;
+    protected static AcknowledgedMessage makeFromRaw(byte[] rawMessage) {
+        int id = parseIdFromRawMessageResponse(rawMessage);
+        int ackId = parseAcknowledgedIdFromRawMessageResponse(rawMessage);
+
+        return new AcknowledgedMessage(id, ackId);
+    }
+
+    private static int parseAcknowledgedIdFromRawMessageResponse(@NonNull byte[] message) {
+        int pos = datapos() - DATA_LEN - ID_LEN; // AckId is at the end of data block, padded with zeros left.
+        byte[] rawInt = Arrays.copyOfRange(message, pos, pos + ID_LEN - 1);
+        return EndianessUtils.littleEndianBytesToInt(rawInt);
     }
 
     @Override

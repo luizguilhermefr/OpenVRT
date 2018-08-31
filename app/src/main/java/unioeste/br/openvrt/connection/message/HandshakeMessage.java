@@ -19,8 +19,9 @@ public class HandshakeMessage extends Message {
         this.ourId = IdFactory.getInstance().next();
     }
 
-    public static HandshakeMessage makeFromRaw(byte[] rawMessage) {
-        return null;
+    protected static HandshakeMessage makeFromRaw(byte[] rawMessage) {
+        int id = parseIdFromRawMessageResponse(rawMessage);
+        return new HandshakeMessage(id);
     }
 
     @Override

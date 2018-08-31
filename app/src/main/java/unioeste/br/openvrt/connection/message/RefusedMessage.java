@@ -13,6 +13,12 @@ public class RefusedMessage extends AcknowledgedMessage {
         super(ourId, refusedId);
     }
 
+    protected static RefusedMessage makeFromRaw(byte[] rawMessage) {
+        AcknowledgedMessage msg = AcknowledgedMessage.makeFromRaw(rawMessage);
+
+        return (RefusedMessage) msg;
+    }
+
     @Override
     protected Opcode opcode() {
         return Opcode.REFUSE_OP;

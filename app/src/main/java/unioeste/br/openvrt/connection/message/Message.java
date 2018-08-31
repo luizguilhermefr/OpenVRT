@@ -37,15 +37,27 @@ public abstract class Message {
             (byte) 0x00,
     };
 
+    protected static int datapos() {
+        return SIGNATURE_LEN + VERSION_MAJOR_LEN + VERSION_MINOR_LEN + ID_LEN + OPCODE_LEN;
+    }
+
+    protected static int opcodepos() {
+        return SIGNATURE_LEN + VERSION_MAJOR_LEN + VERSION_MINOR_LEN + ID_LEN;
+    }
+
+    protected static int idpos() {
+        return SIGNATURE_LEN + VERSION_MAJOR_LEN + VERSION_MINOR_LEN;
+    }
+
     @NonNull
-    private static Opcode parseOpcodeFromRawMessageResponse(@NonNull byte[] message) {
-        int pos = SIGNATURE_LEN + VERSION_MAJOR_LEN + VERSION_MINOR_LEN + ID_LEN;
+    protected static Opcode parseOpcodeFromRawMessageResponse(@NonNull byte[] message) {
+        int pos = opcodepos();
         String opcodeStr = String.valueOf(message[pos]);
         return Opcode.valueOf(opcodeStr);
     }
 
-    private static int parseIdFromRawMessageResponse(@NonNull byte[] message) {
-        int pos = SIGNATURE_LEN + VERSION_MAJOR_LEN + VERSION_MINOR_LEN;
+    protected static int parseIdFromRawMessageResponse(@NonNull byte[] message) {
+        int pos = idpos();
         byte[] rawId = Arrays.copyOfRange(message, pos, pos + ID_LEN - 1);
         return EndianessUtils.littleEndianBytesToInt(rawId);
     }
