@@ -39,6 +39,10 @@ public class AcknowledgedMessage extends Message {
         return EndianessUtils.littleEndianBytesToInt(rawInt);
     }
 
+    public int getAcknowledgedId() {
+        return acknowledgedId;
+    }
+
     @Override
     protected byte[] id() {
         return EndianessUtils.intToLittleEndianBytes(ourId);

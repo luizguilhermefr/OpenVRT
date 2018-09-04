@@ -3,6 +3,7 @@ package unioeste.br.openvrt.connection;
 import android.bluetooth.BluetoothSocket;
 import android.support.annotation.NonNull;
 import unioeste.br.openvrt.connection.exception.InvalidMessageException;
+import unioeste.br.openvrt.connection.message.AcknowledgedMessage;
 import unioeste.br.openvrt.connection.message.Message;
 
 import java.io.IOException;
@@ -12,6 +13,8 @@ import java.io.OutputStream;
 public class ConnectedThread extends Thread {
 
     private static ConnectedThread instance;
+
+    private OutcomeMessageQueue outcomeMessageQueue;
 
     private OnMessageReceivedListener messageReceivedListener;
 
@@ -43,6 +46,20 @@ public class ConnectedThread extends Thread {
         this.socket = socket;
         this.istream = socket.getInputStream();
         this.ostream = socket.getOutputStream();
+        setOutcomeMessageQueue();
+    }
+
+    private void setOutcomeMessageQueue() {
+        cancelOutcomeMessageQueue();
+        outcomeMessageQueue = new OutcomeMessageQueue(ostream);
+        outcomeMessageQueue.start();
+    }
+
+    private void cancelOutcomeMessageQueue() {
+        if (outcomeMessageQueue != null) {
+            outcomeMessageQueue.cancel();
+            outcomeMessageQueue = null;
+        }
     }
 
     public void setOnMessageReceivedListener(OnMessageReceivedListener messageReceivedListener) {
@@ -57,18 +74,16 @@ public class ConnectedThread extends Thread {
         this.socketSendErrorListener = socketSendErrorListener;
     }
 
-    private boolean messageReady() throws IOException {
-        return istream.available() >= Message.MSG_LEN;
-    }
-
     private void onMessageReceived(byte[] buffer) {
-        if (messageReceivedListener != null) {
-            try {
-                Message message = Message.makeFromResponse(buffer);
+        try {
+            Message message = Message.makeFromResponse(buffer);
+            if (message instanceof AcknowledgedMessage) {
+                outcomeMessageQueue.submitAck((AcknowledgedMessage) message);
+            } else if (messageReceivedListener != null) {
                 messageReceivedListener.onMessageReceived(message);
-            } catch (InvalidMessageException e) {
-                e.printStackTrace();
             }
+        } catch (InvalidMessageException e) {
+            // TODO: Send refused message.
         }
     }
 
@@ -89,9 +104,9 @@ public class ConnectedThread extends Thread {
     }
 
 
-
     private void bury() {
         try {
+            cancelOutcomeMessageQueue();
             istream.close();
             ostream.close();
             socket.close();
@@ -101,25 +116,36 @@ public class ConnectedThread extends Thread {
     }
 
     private void checkConnectionReady() throws IllegalArgumentException {
-        if (istream == null || ostream == null) {
+        if (istream == null || ostream == null || outcomeMessageQueue == null) {
             throw new IllegalArgumentException("Must call setConnection() before start.");
         }
+    }
+
+    private boolean messageReady() throws IOException {
+        return istream.available() >= Message.MSG_LEN;
+    }
+
+    private void readMessage() throws IOException {
+        byte[] buffer = new byte[Message.MSG_LEN];
+        int bytesRead = istream.read(buffer, 0, Message.MSG_LEN);
+        if (bytesRead == Message.MSG_LEN) {
+            onMessageReceived(buffer);
+        } else {
+            onSocketReceiveError();
+        }
+    }
+
+    public void write(Message message) {
+        outcomeMessageQueue.add(message);
     }
 
     @Override
     public void run() {
         checkConnectionReady();
-        byte[] buffer = new byte[Message.MSG_LEN];
-        int bytesRead;
         while (!shouldDie) {
             try {
                 if (messageReady()) {
-                    bytesRead = istream.read(buffer, 0, Message.MSG_LEN);
-                    if (bytesRead > 0) {
-                        onMessageReceived(buffer);
-                    } else {
-                        // TODO: Cannot read?
-                    }
+                    readMessage();
                 }
             } catch (IOException e) {
                 onSocketReceiveError();

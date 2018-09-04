@@ -1,8 +1,10 @@
 package unioeste.br.openvrt.connection;
 
-import android.support.annotation.NonNull;
+import unioeste.br.openvrt.connection.exception.MessageRefusedException;
+import unioeste.br.openvrt.connection.exception.MessageTimeoutException;
 import unioeste.br.openvrt.connection.message.AcknowledgedMessage;
 import unioeste.br.openvrt.connection.message.Message;
+import unioeste.br.openvrt.connection.message.RefusedMessage;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -11,11 +13,15 @@ import java.util.concurrent.ArrayBlockingQueue;
 
 public class OutcomeMessageQueue extends Thread {
 
+    public static final int DEFAULT_CAPACITY = 5;
+
     private int retries = 3;
 
-    private int timeout = 1500;
+    private int timeout = 1000;
 
-    private int capacity = 5;
+    private int capacity = DEFAULT_CAPACITY;
+
+    private Message messageBeingProcessed;
 
     private ArrayBlockingQueue<Message> queue;
 
@@ -46,44 +52,75 @@ public class OutcomeMessageQueue extends Thread {
         shouldDie = true;
     }
 
-    private boolean checkAcknowlegement(int id) {
-        return false;
+    private MessageResponse checkAcknowlegement() {
+        for (int i = 0; i < acknowledgements.size(); ++i) {
+            AcknowledgedMessage ack = acknowledgements.get(i);
+            if (ack.getAcknowledgedId() == messageBeingProcessed.getId()) {
+                acknowledgements.remove(i);
+                return ack instanceof RefusedMessage ? MessageResponse.ACK_NEGATIVE : MessageResponse.ACK_POSITIVE;
+            }
+        }
+        return MessageResponse.ACK_TIMEOUT;
     }
 
-    private void sendWaitRetry(@NonNull Message message) {
+    private void sendWaitRetry() throws MessageTimeoutException, MessageRefusedException, IOException {
         for (int i = 0; i < retries; i++) {
-            write(message);
             try {
+                ostream.write(messageBeingProcessed.toBytes());
                 Thread.sleep(timeout);
             } catch (InterruptedException e) {
-                checkAcknowlegement(message.getId());
+                MessageResponse code = checkAcknowlegement();
+                switch (code) {
+                    case ACK_POSITIVE:
+                        return;
+                    case ACK_NEGATIVE:
+                        throw new MessageRefusedException();
+                }
             }
+        }
+        throw new MessageTimeoutException();
+    }
+
+    private synchronized void ensureAckCapacity() {
+        if (acknowledgements.size() == capacity) {
+            acknowledgements.remove(0);
         }
     }
 
-    private void submitAck(AcknowledgedMessage ack) {
+    public void submitAck(AcknowledgedMessage ack) {
+        ensureAckCapacity();
         acknowledgements.add(ack);
-        if (true) { // TODO: If there is a message being processed with the id of the acknowledgement.
-            // TODO: Set an accept/reject first
+        if (ack.getAcknowledgedId() == messageBeingProcessed.getId()) {
             interrupt();
         }
     }
 
-    private void write(@NonNull Message message) {
-        try {
-            ostream.write(message.toBytes());
-        } catch (IOException e) {
-            // Do something
-        }
+    private void onResponse(MessageResponse response) {
+        messageBeingProcessed.onResponse(response);
     }
 
     @Override
     public void run() {
         while (!shouldDie) {
             if (!queue.isEmpty()) {
-                Message message = queue.poll();
-                sendWaitRetry(message);
+                messageBeingProcessed = queue.poll();
+                try {
+                    sendWaitRetry();
+                    onResponse(MessageResponse.ACK_POSITIVE);
+                } catch (MessageTimeoutException e) {
+                    onResponse(MessageResponse.ACK_TIMEOUT);
+                } catch (MessageRefusedException e) {
+                    onResponse(MessageResponse.ACK_NEGATIVE);
+                } catch (IOException e) {
+                    onResponse(MessageResponse.ERROR_ON_SEND);
+                } finally {
+                    messageBeingProcessed = null;
+                }
             }
         }
+    }
+
+    public enum MessageResponse {
+        ACK_NEGATIVE, ACK_POSITIVE, ACK_TIMEOUT, ERROR_ON_SEND
     }
 }

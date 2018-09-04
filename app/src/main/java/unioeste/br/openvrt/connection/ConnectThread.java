@@ -2,9 +2,7 @@ package unioeste.br.openvrt.connection;
 
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
-import unioeste.br.openvrt.connection.exception.HandshakeException;
 import unioeste.br.openvrt.connection.message.HandshakeMessage;
-import unioeste.br.openvrt.connection.message.Message;
 
 import java.io.IOException;
 import java.util.UUID;
@@ -22,8 +20,6 @@ public class ConnectThread extends Thread {
     private BluetoothDevice device;
 
     private ConnectedThread connectedThread;
-
-    private boolean handshaked = false;
 
     public ConnectThread(BluetoothDevice device, UUID uuid) {
         this.device = device;
@@ -60,38 +56,19 @@ public class ConnectThread extends Thread {
         this.cannotConnectListener = cannotConnectListener;
     }
 
-    private void handshakeSleep() {
-        try {
-            final int HANDSHAKE_TIMEOUT = 1000;
-            Thread.sleep(HANDSHAKE_TIMEOUT);
-        } catch (InterruptedException e) {
-            //
-        }
-    }
-
-    private synchronized void handshake() throws HandshakeException {
-        bindToHandshake();
-        connectedThread.write(new HandshakeMessage());
-        handshakeSleep();
-        unbindToHandshake();
-        if (!handshaked) {
-            throw new HandshakeException();
-        }
-    }
-
-    private synchronized void handshakeListener(Message message) {
-        if (message instanceof HandshakeMessage) {
-            handshaked = true;
-            interrupt();
-        }
-    }
-
-    private void bindToHandshake() {
-        connectedThread.setOnMessageReceivedListener(this::handshakeListener);
-    }
-
-    private void unbindToHandshake() {
-        connectedThread.setOnMessageReceivedListener(null);
+    private void handshake() {
+        HandshakeMessage handshakeMessage = new HandshakeMessage();
+        handshakeMessage.setResponseListener(response -> {
+            switch (response) {
+                case ACK_TIMEOUT:
+                case ACK_NEGATIVE:
+                    connectedThread.cancel();
+                    onCannotConnect();
+                case ACK_POSITIVE:
+                    onConnected();
+            }
+        });
+        connectedThread.write(handshakeMessage);
     }
 
     @Override
@@ -104,11 +81,6 @@ public class ConnectThread extends Thread {
             connectedThread.setConnection(socket);
             connectedThread.start();
             handshake();
-            onConnected();
-        } catch (HandshakeException e) {
-            e.printStackTrace();
-            connectedThread.cancel();
-            onCannotConnect();
         } catch (IOException e) {
             e.printStackTrace();
             onCannotConnect();

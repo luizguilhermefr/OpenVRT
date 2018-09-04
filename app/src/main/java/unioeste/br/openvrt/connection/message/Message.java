@@ -3,11 +3,14 @@ package unioeste.br.openvrt.connection.message;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import unioeste.br.openvrt.connection.EndianessUtils;
+import unioeste.br.openvrt.connection.OutcomeMessageQueue;
 import unioeste.br.openvrt.connection.exception.InvalidMessageException;
 
 import java.util.Arrays;
 
 public abstract class Message {
+
+    private OnMessageResponseListener listener;
 
     public static final int MSG_LEN = 24;
 
@@ -141,8 +144,18 @@ public abstract class Message {
         return message;
     }
 
-    public int getId () {
+    public int getId() {
         return EndianessUtils.littleEndianBytesToInt(id());
+    }
+
+    public void setResponseListener(OnMessageResponseListener listener) {
+        this.listener = listener;
+    }
+
+    public void onResponse(OutcomeMessageQueue.MessageResponse response) {
+        if (listener != null) {
+            listener.onMessageResponse(response);
+        }
     }
 
     protected abstract byte[] id();
@@ -169,5 +182,9 @@ public abstract class Message {
         public String toString() {
             return String.valueOf(code);
         }
+    }
+
+    public interface OnMessageResponseListener {
+        void onMessageResponse(OutcomeMessageQueue.MessageResponse response);
     }
 }
