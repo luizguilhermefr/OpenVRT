@@ -1,6 +1,5 @@
 package unioeste.br.openvrt.connection;
 
-import android.bluetooth.BluetoothSocket;
 import android.support.annotation.NonNull;
 import unioeste.br.openvrt.connection.exception.InvalidMessageException;
 import unioeste.br.openvrt.connection.message.AcknowledgedMessage;
@@ -26,8 +25,6 @@ public class ConnectedThread extends Thread {
 
     private OutputStream ostream;
 
-    private BluetoothSocket socket;
-
     private boolean shouldDie = false;
 
     private ConnectedThread() {
@@ -42,14 +39,13 @@ public class ConnectedThread extends Thread {
         return instance;
     }
 
-    public void setConnection(@NonNull BluetoothSocket socket) throws IOException {
-        this.socket = socket;
-        this.istream = socket.getInputStream();
-        this.ostream = socket.getOutputStream();
-        setOutcomeMessageQueue();
+    void setConnection(@NonNull InputStream istream, @NonNull OutputStream ostream) {
+        this.istream = istream;
+        this.ostream = ostream;
+        initializeOutcomeMessageQueue();
     }
 
-    private void setOutcomeMessageQueue() {
+    private void initializeOutcomeMessageQueue() {
         cancelOutcomeMessageQueue();
         outcomeMessageQueue = new OutcomeMessageQueue(ostream);
         outcomeMessageQueue.start();
@@ -109,7 +105,6 @@ public class ConnectedThread extends Thread {
             cancelOutcomeMessageQueue();
             istream.close();
             ostream.close();
-            socket.close();
         } catch (IOException ignored) {
             //
         }
@@ -135,7 +130,7 @@ public class ConnectedThread extends Thread {
         }
     }
 
-    public void write(Message message) {
+    void write(Message message) {
         outcomeMessageQueue.add(message);
     }
 

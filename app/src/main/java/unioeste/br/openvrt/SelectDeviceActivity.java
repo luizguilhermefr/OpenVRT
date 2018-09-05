@@ -10,8 +10,6 @@ import android.support.v7.app.AppCompatActivity;
 import unioeste.br.openvrt.connection.ConnectThread;
 import unioeste.br.openvrt.connection.ConnectedThread;
 
-import java.util.UUID;
-
 public class SelectDeviceActivity extends AppCompatActivity implements SelectDeviceFragment.DeviceListFragmentInteractionListener {
 
     private SelectDeviceFragment selectDeviceFragment;
@@ -65,8 +63,7 @@ public class SelectDeviceActivity extends AppCompatActivity implements SelectDev
     }
 
     private void connect() {
-        String uuid = getString(R.string.bluetooth_uuid);
-        ConnectThread connectThread = new ConnectThread(selectedDevice, UUID.fromString(uuid));
+        ConnectThread connectThread = new ConnectThread(selectedDevice);
         connectThread.setOnConnectingListener(this::onConnecting);
         connectThread.setOnConnectedListener(this::onConnected);
         connectThread.setOnCannotConnectListener(this::onConnectionError);

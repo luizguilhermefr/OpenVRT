@@ -13,7 +13,7 @@ import java.util.concurrent.ArrayBlockingQueue;
 
 public class OutcomeMessageQueue extends Thread {
 
-    public static final int DEFAULT_CAPACITY = 5;
+    private static final int DEFAULT_CAPACITY = 5;
 
     private int retries = 3;
 
@@ -31,9 +31,13 @@ public class OutcomeMessageQueue extends Thread {
 
     private OutputStream ostream;
 
-    public OutcomeMessageQueue(OutputStream ostream) {
-        queue = new ArrayBlockingQueue<>(capacity);
-        acknowledgements = new ArrayList<>(capacity);
+    private ErrorListener errorListener;
+
+    OutcomeMessageQueue(OutputStream ostream) {
+        this.ostream = ostream;
+        this.queue = new ArrayBlockingQueue<>(capacity);
+        this.acknowledgements = new ArrayList<>(capacity);
+        this.errorListener = new ErrorListener();
     }
 
     public void setRetries(int retries) {
@@ -63,10 +67,10 @@ public class OutcomeMessageQueue extends Thread {
         return MessageResponse.ACK_TIMEOUT;
     }
 
-    private void sendWaitRetry() throws MessageTimeoutException, MessageRefusedException, IOException {
+    private void sendWaitRetry() throws MessageTimeoutException, MessageRefusedException {
         for (int i = 0; i < retries; i++) {
             try {
-                ostream.write(messageBeingProcessed.toBytes());
+                new Thread(new WriterRunnable(messageBeingProcessed)).start();
                 Thread.sleep(timeout);
             } catch (InterruptedException e) {
                 MessageResponse code = checkAcknowlegement();
@@ -87,7 +91,7 @@ public class OutcomeMessageQueue extends Thread {
         }
     }
 
-    public void submitAck(AcknowledgedMessage ack) {
+    synchronized void submitAck(AcknowledgedMessage ack) {
         ensureAckCapacity();
         acknowledgements.add(ack);
         if (ack.getAcknowledgedId() == messageBeingProcessed.getId()) {
@@ -111,8 +115,6 @@ public class OutcomeMessageQueue extends Thread {
                     onResponse(MessageResponse.ACK_TIMEOUT);
                 } catch (MessageRefusedException e) {
                     onResponse(MessageResponse.ACK_NEGATIVE);
-                } catch (IOException e) {
-                    onResponse(MessageResponse.ERROR_ON_SEND);
                 } finally {
                     messageBeingProcessed = null;
                 }
@@ -122,5 +124,31 @@ public class OutcomeMessageQueue extends Thread {
 
     public enum MessageResponse {
         ACK_NEGATIVE, ACK_POSITIVE, ACK_TIMEOUT, ERROR_ON_SEND
+    }
+
+    private class ErrorListener {
+        void onErrorThrown(Exception e) {
+            onResponse(MessageResponse.ERROR_ON_SEND);
+        }
+    }
+
+    private class WriterRunnable implements Runnable {
+        private Message frozenMessage;
+
+        WriterRunnable(Message frozenMessage) {
+            this.frozenMessage = frozenMessage;
+        }
+
+        @Override
+        public void run() {
+            try {
+                Thread.sleep(100);
+                ostream.write(frozenMessage.toBytes());
+            } catch (IOException e) {
+                errorListener.onErrorThrown(e);
+            } catch (InterruptedException ignored) {
+                //
+            }
+        }
     }
 }

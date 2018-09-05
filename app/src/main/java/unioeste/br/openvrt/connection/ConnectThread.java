@@ -9,21 +9,20 @@ import java.util.UUID;
 
 public class ConnectThread extends Thread {
 
+    private static final UUID CONN_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
+
     private OnConnectingListener connectingListener;
 
     private OnConnectedListener connectedListener;
 
     private OnCannotConnectListener cannotConnectListener;
 
-    private UUID uuid;
-
     private BluetoothDevice device;
 
     private ConnectedThread connectedThread;
 
-    public ConnectThread(BluetoothDevice device, UUID uuid) {
+    public ConnectThread(BluetoothDevice device) {
         this.device = device;
-        this.uuid = uuid;
     }
 
     private void onConnecting() {
@@ -33,6 +32,9 @@ public class ConnectThread extends Thread {
     }
 
     private void onCannotConnect() {
+        if (connectedThread != null) {
+            connectedThread.cancel();
+        }
         if (cannotConnectListener != null) {
             cannotConnectListener.onCannotConnect();
         }
@@ -62,10 +64,11 @@ public class ConnectThread extends Thread {
             switch (response) {
                 case ACK_TIMEOUT:
                 case ACK_NEGATIVE:
-                    connectedThread.cancel();
                     onCannotConnect();
+                    break;
                 case ACK_POSITIVE:
                     onConnected();
+                    break;
             }
         });
         connectedThread.write(handshakeMessage);
@@ -75,10 +78,10 @@ public class ConnectThread extends Thread {
     public void run() {
         onConnecting();
         try {
-            BluetoothSocket socket = device.createRfcommSocketToServiceRecord(uuid);
+            BluetoothSocket socket = device.createRfcommSocketToServiceRecord(ConnectThread.CONN_UUID);
             socket.connect();
             connectedThread = ConnectedThread.getInstance();
-            connectedThread.setConnection(socket);
+            connectedThread.setConnection(socket.getInputStream(), socket.getOutputStream());
             connectedThread.start();
             handshake();
         } catch (IOException e) {
