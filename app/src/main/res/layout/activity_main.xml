@@ -17,7 +17,7 @@
     <include layout="@layout/fragment_empty_state" />
 
     <android.support.design.widget.FloatingActionButton
-        android:ourId="@+ourId/select_shape_fab"
+        android:id="@+id/select_shape_fab"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
