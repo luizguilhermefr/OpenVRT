@@ -30,15 +30,9 @@ public abstract class Message {
 
     private static final byte[] SIGNATURE = "OPENVRT".getBytes();
 
-    private static final byte[] VERSION_MAJOR = {
-            (byte) 0x00,
-            (byte) 0x01,
-    };
+    private static final byte[] VERSION_MAJOR = EndianessUtils.shortToLittleEndianBytes((short) 1);
 
-    private static final byte[] VERSION_MINOR = {
-            (byte) 0x00,
-            (byte) 0x00,
-    };
+    private static final byte[] VERSION_MINOR = EndianessUtils.shortToLittleEndianBytes((short) 0);
 
     protected static int datapos() {
         return SIGNATURE_LEN + VERSION_MAJOR_LEN + VERSION_MINOR_LEN + ID_LEN + OPCODE_LEN;
@@ -123,7 +117,7 @@ public abstract class Message {
         // Add id
         System.arraycopy(id, 0, header, SIGNATURE_LEN + VERSION_MAJOR_LEN + VERSION_MINOR_LEN, ID_LEN);
         // Add opcode
-        System.arraycopy(opcode.toString().getBytes(), 0, header, SIGNATURE_LEN + VERSION_MAJOR_LEN + VERSION_MINOR_LEN + ID_LEN, OPCODE_LEN);
+        System.arraycopy(new byte[]{opcode.code}, 0, header, SIGNATURE_LEN + VERSION_MAJOR_LEN + VERSION_MINOR_LEN + ID_LEN, OPCODE_LEN);
 
         return header;
     }
@@ -171,16 +165,10 @@ public abstract class Message {
         RATE_SET((byte) 0x03),
         MEASURE_SET((byte) 0x04);
 
-        private final byte code;
+        public final byte code;
 
         Opcode(final byte code) {
             this.code = code;
-        }
-
-        @NonNull
-        @Override
-        public String toString() {
-            return String.valueOf(code);
         }
     }
 
