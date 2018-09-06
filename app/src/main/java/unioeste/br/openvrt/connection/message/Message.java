@@ -1,7 +1,6 @@
 package unioeste.br.openvrt.connection.message;
 
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import unioeste.br.openvrt.connection.EndianessUtils;
 import unioeste.br.openvrt.connection.OutcomeMessageQueue;
 import unioeste.br.openvrt.connection.exception.InvalidMessageException;
@@ -28,22 +27,113 @@ public abstract class Message {
 
     public static final int OPCODE_LEN = 1;
 
-    private static final byte[] SIGNATURE = "OPENVRT".getBytes();
+    private static final String SIGNATURE = "OPENVRT";
 
-    private static final byte[] VERSION_MAJOR = EndianessUtils.shortToLittleEndianBytes((short) 1);
+    private static final short VERSION_MAJOR = 1;
 
-    private static final byte[] VERSION_MINOR = EndianessUtils.shortToLittleEndianBytes((short) 0);
+    private static final short VERSION_MINOR = 0;
 
-    protected static int datapos() {
-        return SIGNATURE_LEN + VERSION_MAJOR_LEN + VERSION_MINOR_LEN + ID_LEN + OPCODE_LEN;
+    protected char[] signature;
+
+    protected short majorVersion;
+
+    protected short minorVersion;
+
+    protected int id;
+
+    protected char opcode;
+
+    protected char[] data;
+
+    private Message(char[] signature, short major, short minor, int id, char opcode, char[] data) {
+        this.signature = signature;
+        this.majorVersion = major;
+        this.minorVersion = minor;
+        this.id = id;
+        this.data = data;
     }
 
-    protected static int opcodepos() {
-        return SIGNATURE_LEN + VERSION_MAJOR_LEN + VERSION_MINOR_LEN + ID_LEN;
+    public static Message make(@NonNull byte[] buf) throws InvalidMessageException {
+        if (!isValidLength(buf)) {
+            throw new InvalidMessageException();
+        }
+
+        char[] signature = makeSignatureFromBuffer(buf);
+        short major = makeMajorFromBuffer(buf);
+        short minor = makeMinorFromBuffer(buf);
+        int id = makeIdFromBuffer(buf);
+        char opcode = makeOpcodeFromBuffer(buf);
+        char[] data = makeDataFromBuffer(buf);
+
+        if (!isValidSignature(signature)) {
+            throw new InvalidMessageException();
+        }
+    }
+
+    private static char[] makeSignatureFromBuffer(@NonNull byte[] buf) {
+        byte[] signatureBuf = new byte[SIGNATURE_LEN];
+        System.arraycopy(buf, signaturepos(), signatureBuf, signaturepos(), majorpos() - signaturepos());
+        return Arrays.toString(signatureBuf).toCharArray();
+    }
+
+    private static short makeMajorFromBuffer(@NonNull byte[] buf) {
+        byte[] majorBuf = new byte[VERSION_MAJOR_LEN];
+        System.arraycopy(buf, majorpos(), majorBuf, majorpos(), minorpos() - majorpos());
+        return EndianessUtils.littleEndianBytesToShort(majorBuf);
+    }
+
+    private static short makeMinorFromBuffer(@NonNull byte[] buf) {
+        byte[] minorBuf = new byte[VERSION_MINOR_LEN];
+        System.arraycopy(buf, minorpos(), minorBuf, minorpos(), idpos() - minorpos());
+        return EndianessUtils.littleEndianBytesToShort(minorBuf);
+    }
+
+    private static int makeIdFromBuffer(@NonNull byte[] buf) {
+        byte[] idBuf = new byte[ID_LEN];
+        System.arraycopy(buf, idpos(), idBuf, idpos(), opcodepos() - idpos());
+        return EndianessUtils.littleEndianBytesToInt(idBuf);
+    }
+
+    private static char makeOpcodeFromBuffer(@NonNull byte[] buf) {
+        return (char) buf[opcodepos()];
+    }
+
+    private static char[] makeDataFromBuffer(@NonNull byte[] buf) {
+        byte[] dataBuf = new byte[DATA_LEN];
+        System.arraycopy(buf, datapos(), dataBuf, datapos(), datapos() + DATA_LEN - datapos());
+        return Arrays.toString(dataBuf).toCharArray();
+    }
+
+    private static boolean isValidLength(@NonNull byte[] buf) {
+        return buf.length == MSG_LEN;
+    }
+
+    private static boolean isValidSignature(@NonNull char[] signature) {
+        return Arrays.toString(signature).equals(SIGNATURE);
+    }
+
+    protected static int signaturepos() {
+        return 0;
+    }
+
+    protected static int majorpos() {
+        return signaturepos() + SIGNATURE_LEN;
+    }
+
+    protected static int minorpos() {
+        return majorpos() + VERSION_MAJOR_LEN;
     }
 
     protected static int idpos() {
-        return SIGNATURE_LEN + VERSION_MAJOR_LEN + VERSION_MINOR_LEN;
+        return minorpos() + VERSION_MINOR_LEN;
+    }
+
+    protected static int opcodepos() {
+        return idpos() + ID_LEN;
+    }
+
+    protected static int datapos() {
+        return opcodepos() + OPCODE_LEN;
     }
 
     @NonNull
@@ -57,53 +147,6 @@ public abstract class Message {
         int pos = idpos();
         byte[] rawId = Arrays.copyOfRange(message, pos, pos + ID_LEN - 1);
         return EndianessUtils.littleEndianBytesToInt(rawId);
-    }
-
-    private static boolean isValid(@NonNull byte[] content) {
-        if (content.length != MSG_LEN) {
-            return false;
-        }
-
-        // Check signature equals
-        for (int i = 0; i < SIGNATURE_LEN; i++) {
-            if (content[i] != SIGNATURE[i]) {
-                return false;
-            }
-        }
-
-        // Check version equals
-        for (int i = SIGNATURE_LEN; i < SIGNATURE_LEN + VERSION_MAJOR_LEN; i++) {
-            if (content[i] != VERSION_MAJOR[i - SIGNATURE_LEN]) {
-                return false;
-            }
-        }
-
-        try {
-            Opcode opcode = parseOpcodeFromRawMessageResponse(content);
-        } catch (IllegalArgumentException e) {
-            return false;
-        }
-
-
-        return true;
-    }
-
-    @Nullable
-    public static Message makeFromResponse(byte[] content) throws InvalidMessageException {
-        if (!isValid(content)) {
-            throw new InvalidMessageException();
-        }
-
-        switch (parseOpcodeFromRawMessageResponse(content)) {
-            case ACK_OP:
-                return AcknowledgedMessage.makeFromRaw(content);
-            case REFUSE_OP:
-                return RefusedMessage.makeFromRaw(content);
-            case HANDSHAKE:
-                return HandshakeMessage.makeFromRaw(content);
-        }
-
-        return null;
     }
 
     private byte[] header() {

@@ -34,9 +34,10 @@ public class AcknowledgedMessage extends Message {
     }
 
     private static int parseAcknowledgedIdFromRawMessageResponse(@NonNull byte[] message) {
-        int pos = datapos() - DATA_LEN - ID_LEN; // AckId is at the end of data block, padded with zeros left.
-        byte[] rawInt = Arrays.copyOfRange(message, pos, pos + ID_LEN - 1);
-        return EndianessUtils.littleEndianBytesToInt(rawInt);
+        int pos = datapos();
+        byte[] rawInt = Arrays.copyOfRange(message, pos, pos + DATA_LEN - 1);
+        String val = Arrays.toString(rawInt);
+        return Integer.valueOf(val);
     }
 
     public int getAcknowledgedId() {
