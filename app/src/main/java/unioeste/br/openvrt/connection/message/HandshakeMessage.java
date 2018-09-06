@@ -1,7 +1,8 @@
 package unioeste.br.openvrt.connection.message;
 
-import unioeste.br.openvrt.connection.EndianessUtils;
+import android.support.annotation.NonNull;
 import unioeste.br.openvrt.connection.IdFactory;
+import unioeste.br.openvrt.connection.message.dictionary.Opcode;
 
 /**
  * Signal that the device wants to start a communication.
@@ -9,29 +10,15 @@ import unioeste.br.openvrt.connection.IdFactory;
  */
 public class HandshakeMessage extends Message {
 
-    private int ourId;
-
-    public HandshakeMessage(int ourId) {
-        this.ourId = ourId;
+    public HandshakeMessage(char[] signature, short major, short minor, int id) {
+        super(signature, major, minor, id);
+        this.data = emptyData();
     }
 
-    public HandshakeMessage() {
-        this.ourId = IdFactory.getInstance().next();
-    }
-
-    protected static HandshakeMessage makeFromRaw(byte[] rawMessage) {
-        int id = parseIdFromRawMessageResponse(rawMessage);
-        return new HandshakeMessage(id);
-    }
-
-    @Override
-    protected byte[] id() {
-        return EndianessUtils.intToLittleEndianBytes(ourId);
-    }
-
-    @Override
-    protected byte[] data() {
-        return emptyData();
+    @NonNull
+    public static HandshakeMessage newInstance() {
+        int id = IdFactory.getInstance().next();
+        return new HandshakeMessage(SIGNATURE.toCharArray(), VERSION_MAJOR, VERSION_MINOR, id);
     }
 
     @Override

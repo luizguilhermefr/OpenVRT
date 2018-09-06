@@ -5,6 +5,7 @@ import unioeste.br.openvrt.connection.exception.MessageTimeoutException;
 import unioeste.br.openvrt.connection.message.AcknowledgedMessage;
 import unioeste.br.openvrt.connection.message.Message;
 import unioeste.br.openvrt.connection.message.RefusedMessage;
+import unioeste.br.openvrt.connection.message.dictionary.MessageResponse;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -120,10 +121,6 @@ public class OutcomeMessageQueue extends Thread {
                 }
             }
         }
-    }
-
-    public enum MessageResponse {
-        ACK_NEGATIVE, ACK_POSITIVE, ACK_TIMEOUT, ERROR_ON_SEND
     }
 
     private class ErrorListener {

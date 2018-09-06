@@ -59,7 +59,7 @@ public class ConnectThread extends Thread {
     }
 
     private void handshake() {
-        HandshakeMessage handshakeMessage = new HandshakeMessage();
+        HandshakeMessage handshakeMessage = HandshakeMessage.newInstance();
         handshakeMessage.setResponseListener(response -> {
             switch (response) {
                 case ACK_TIMEOUT:

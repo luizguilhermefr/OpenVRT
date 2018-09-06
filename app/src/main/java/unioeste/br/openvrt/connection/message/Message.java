@@ -1,9 +1,8 @@
 package unioeste.br.openvrt.connection.message;
 
-import android.support.annotation.NonNull;
 import unioeste.br.openvrt.connection.EndianessUtils;
-import unioeste.br.openvrt.connection.OutcomeMessageQueue;
-import unioeste.br.openvrt.connection.exception.InvalidMessageException;
+import unioeste.br.openvrt.connection.message.dictionary.MessageResponse;
+import unioeste.br.openvrt.connection.message.dictionary.Opcode;
 
 import java.util.Arrays;
 
@@ -27,11 +26,11 @@ public abstract class Message {
 
     public static final int OPCODE_LEN = 1;
 
-    private static final String SIGNATURE = "OPENVRT";
+    public static final String SIGNATURE = "OPENVRT";
 
-    private static final short VERSION_MAJOR = 1;
+    public static final short VERSION_MAJOR = 1;
 
-    private static final short VERSION_MINOR = 0;
+    public static final short VERSION_MINOR = 0;
 
     protected char[] signature;
 
@@ -41,181 +40,89 @@ public abstract class Message {
 
     protected int id;
 
-    protected char opcode;
-
     protected char[] data;
 
-    private Message(char[] signature, short major, short minor, int id, char opcode, char[] data) {
+    Message(char[] signature, short major, short minor, int id) {
         this.signature = signature;
         this.majorVersion = major;
         this.minorVersion = minor;
         this.id = id;
-        this.data = data;
     }
 
-    public static Message make(@NonNull byte[] buf) throws InvalidMessageException {
-        if (!isValidLength(buf)) {
-            throw new InvalidMessageException();
-        }
-
-        char[] signature = makeSignatureFromBuffer(buf);
-        short major = makeMajorFromBuffer(buf);
-        short minor = makeMinorFromBuffer(buf);
-        int id = makeIdFromBuffer(buf);
-        char opcode = makeOpcodeFromBuffer(buf);
-        char[] data = makeDataFromBuffer(buf);
-
-        if (!isValidSignature(signature)) {
-            throw new InvalidMessageException();
-        }
-    }
-
-    private static char[] makeSignatureFromBuffer(@NonNull byte[] buf) {
-        byte[] signatureBuf = new byte[SIGNATURE_LEN];
-        System.arraycopy(buf, signaturepos(), signatureBuf, signaturepos(), majorpos() - signaturepos());
-        return Arrays.toString(signatureBuf).toCharArray();
-    }
-
-    private static short makeMajorFromBuffer(@NonNull byte[] buf) {
-        byte[] majorBuf = new byte[VERSION_MAJOR_LEN];
-        System.arraycopy(buf, majorpos(), majorBuf, majorpos(), minorpos() - majorpos());
-        return EndianessUtils.littleEndianBytesToShort(majorBuf);
-    }
-
-    private static short makeMinorFromBuffer(@NonNull byte[] buf) {
-        byte[] minorBuf = new byte[VERSION_MINOR_LEN];
-        System.arraycopy(buf, minorpos(), minorBuf, minorpos(), idpos() - minorpos());
-        return EndianessUtils.littleEndianBytesToShort(minorBuf);
-    }
-
-    private static int makeIdFromBuffer(@NonNull byte[] buf) {
-        byte[] idBuf = new byte[ID_LEN];
-        System.arraycopy(buf, idpos(), idBuf, idpos(), opcodepos() - idpos());
-        return EndianessUtils.littleEndianBytesToInt(idBuf);
-    }
-
-    private static char makeOpcodeFromBuffer(@NonNull byte[] buf) {
-        return (char) buf[opcodepos()];
-    }
-
-    private static char[] makeDataFromBuffer(@NonNull byte[] buf) {
-        byte[] dataBuf = new byte[DATA_LEN];
-        System.arraycopy(buf, datapos(), dataBuf, datapos(), datapos() + DATA_LEN - datapos());
-        return Arrays.toString(dataBuf).toCharArray();
-    }
-
-    private static boolean isValidLength(@NonNull byte[] buf) {
-        return buf.length == MSG_LEN;
-    }
-
-    private static boolean isValidSignature(@NonNull char[] signature) {
-        return Arrays.toString(signature).equals(SIGNATURE);
-    }
-
-    protected static int signaturepos() {
+    public static int signaturepos() {
         return 0;
     }
 
-    protected static int majorpos() {
+    public static int majorpos() {
         return signaturepos() + SIGNATURE_LEN;
     }
 
-    protected static int minorpos() {
+    public static int minorpos() {
         return majorpos() + VERSION_MAJOR_LEN;
     }
 
-    protected static int idpos() {
+    public static int idpos() {
         return minorpos() + VERSION_MINOR_LEN;
     }
 
-    protected static int opcodepos() {
+    public static int opcodepos() {
         return idpos() + ID_LEN;
     }
 
-    protected static int datapos() {
+    public static int datapos() {
         return opcodepos() + OPCODE_LEN;
     }
 
-    @NonNull
-    protected static Opcode parseOpcodeFromRawMessageResponse(@NonNull byte[] message) {
-        int pos = opcodepos();
-        String opcodeStr = String.valueOf(message[pos]);
-        return Opcode.valueOf(opcodeStr);
-    }
-
-    protected static int parseIdFromRawMessageResponse(@NonNull byte[] message) {
-        int pos = idpos();
-        byte[] rawId = Arrays.copyOfRange(message, pos, pos + ID_LEN - 1);
-        return EndianessUtils.littleEndianBytesToInt(rawId);
-    }
-
-    private byte[] header() {
-        Opcode opcode = opcode();
-        byte[] id = id();
-        byte[] header = Arrays.copyOf(SIGNATURE, HEADER_LEN);
-        // Add major
-        System.arraycopy(VERSION_MAJOR, 0, header, SIGNATURE_LEN, VERSION_MAJOR_LEN);
-        // Add minor
-        System.arraycopy(VERSION_MINOR, 0, header, SIGNATURE_LEN + VERSION_MAJOR_LEN, VERSION_MINOR_LEN);
-        // Add id
-        System.arraycopy(id, 0, header, SIGNATURE_LEN + VERSION_MAJOR_LEN + VERSION_MINOR_LEN, ID_LEN);
-        // Add opcode
-        System.arraycopy(new byte[]{opcode.code}, 0, header, SIGNATURE_LEN + VERSION_MAJOR_LEN + VERSION_MINOR_LEN + ID_LEN, OPCODE_LEN);
+    private byte[] buildHeaderBytes() {
+        byte[] signatureBytes = SIGNATURE.getBytes();
+        byte[] majorBytes = EndianessUtils.shortToLittleEndianBytes(majorVersion);
+        byte[] minorBytes = EndianessUtils.shortToLittleEndianBytes(minorVersion);
+        byte[] idBytes = EndianessUtils.intToLittleEndianBytes(id);
+        byte opcodeByte = opcode().code;
+        byte[] header = new byte[HEADER_LEN];
+        System.arraycopy(signatureBytes, 0, header, signaturepos(), SIGNATURE_LEN);
+        System.arraycopy(majorBytes, 0, header, majorpos(), VERSION_MAJOR_LEN);
+        System.arraycopy(minorBytes, 0, header, minorpos(), VERSION_MINOR_LEN);
+        System.arraycopy(idBytes, 0, header, idpos(), ID_LEN);
+        System.arraycopy(new byte[]{opcodeByte}, 0, header, opcodepos(), OPCODE_LEN);
 
         return header;
     }
 
-    byte[] emptyData() {
-        byte[] data = new byte[DATA_LEN];
-        Arrays.fill(data, (byte) Character.MIN_VALUE);
+    char[] emptyData() {
+        char[] data = new char[DATA_LEN];
+        Arrays.fill(data, Character.MIN_VALUE);
 
         return data;
     }
 
     public byte[] toBytes() {
-        byte[] header = header();
-        byte[] data = data();
-        byte[] message = Arrays.copyOf(header, MSG_LEN);
-        System.arraycopy(data, 0, message, HEADER_LEN, DATA_LEN);
+        byte[] headerBytes = buildHeaderBytes();
+        byte[] dataBytes = String.valueOf(data).getBytes();
+        byte[] msg = new byte[MSG_LEN];
+        System.arraycopy(headerBytes, 0, msg, 0, HEADER_LEN);
+        System.arraycopy(dataBytes, 0, msg, HEADER_LEN, DATA_LEN);
 
-        return message;
+        return msg;
     }
 
     public int getId() {
-        return EndianessUtils.littleEndianBytesToInt(id());
+        return id;
     }
 
     public void setResponseListener(OnMessageResponseListener listener) {
         this.listener = listener;
     }
 
-    public void onResponse(OutcomeMessageQueue.MessageResponse response) {
+    public void onResponse(MessageResponse response) {
         if (listener != null) {
             listener.onMessageResponse(response);
         }
     }
 
-    protected abstract byte[] id();
-
-    protected abstract byte[] data();
-
-    protected abstract Opcode opcode();
-
-    protected enum Opcode {
-        REFUSE_OP((byte) 0x00),
-        ACK_OP((byte) 0x01),
-        HANDSHAKE((byte) 0x02),
-        RATE_SET((byte) 0x03),
-        MEASURE_SET((byte) 0x04);
-
-        public final byte code;
-
-        Opcode(final byte code) {
-            this.code = code;
-        }
-    }
+    abstract Opcode opcode();
 
     public interface OnMessageResponseListener {
-        void onMessageResponse(OutcomeMessageQueue.MessageResponse response);
+        void onMessageResponse(MessageResponse response);
     }
 }

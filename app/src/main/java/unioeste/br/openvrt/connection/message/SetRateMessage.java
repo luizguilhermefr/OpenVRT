@@ -1,7 +1,8 @@
 package unioeste.br.openvrt.connection.message;
 
-import unioeste.br.openvrt.connection.EndianessUtils;
+import android.support.annotation.NonNull;
 import unioeste.br.openvrt.connection.IdFactory;
+import unioeste.br.openvrt.connection.message.dictionary.Opcode;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -12,31 +13,26 @@ import java.text.DecimalFormat;
  */
 public class SetRateMessage extends Message {
 
-    private BigDecimal value;
+    private BigDecimal rate;
 
-    private int ourId;
-
-    public SetRateMessage(BigDecimal value) {
-        this.ourId = IdFactory.getInstance().next();
-        this.value = value;
+    public SetRateMessage(char[] signature, short major, short minor, int id, BigDecimal rate) {
+        super(signature, major, minor, id);
+        this.rate = rate;
+        makeDataFromRate();
     }
 
-    public SetRateMessage(int ourId, BigDecimal value) {
-        this.ourId = ourId;
-        this.value = value;
+    @NonNull
+    public static SetRateMessage newInstance(BigDecimal rate) {
+        int id = IdFactory.getInstance().next();
+        return new SetRateMessage(SIGNATURE.toCharArray(), VERSION_MAJOR, VERSION_MINOR, id, rate);
     }
 
-    @Override
-    protected byte[] id() {
-        return EndianessUtils.intToLittleEndianBytes(ourId);
-    }
-
-    @Override
-    protected byte[] data() {
+    private void makeDataFromRate() {
         DecimalFormat df = new DecimalFormat("000000.00");
         df.setRoundingMode(RoundingMode.DOWN);
-        return df.format(value).replace(".", "").getBytes();
+        data = df.format(rate).replace(".", "").toCharArray();
     }
+
 
     @Override
     protected Opcode opcode() {

@@ -1,10 +1,11 @@
 package unioeste.br.openvrt.connection.message;
 
 import android.support.annotation.NonNull;
-import unioeste.br.openvrt.connection.EndianessUtils;
 import unioeste.br.openvrt.connection.IdFactory;
+import unioeste.br.openvrt.connection.message.dictionary.Opcode;
 
 import java.util.Arrays;
+import java.util.Locale;
 
 /**
  * Signal that a message of id x was received and accepted.
@@ -12,50 +13,38 @@ import java.util.Arrays;
  */
 public class AcknowledgedMessage extends Message {
 
-    private int ourId;
-
     private int acknowledgedId;
 
-    public AcknowledgedMessage(int acknowledgedId) {
-        this.ourId = IdFactory.getInstance().next();
+    public AcknowledgedMessage(char[] signature, short major, short minor, int id, int acknowledgedId) {
+        super(signature, major, minor, id);
         this.acknowledgedId = acknowledgedId;
+        makeDataFromAcknowledgedId();
     }
 
-    public AcknowledgedMessage(int ourId, int acknowledgedId) {
-        this.ourId = ourId;
-        this.acknowledgedId = acknowledgedId;
+    public AcknowledgedMessage(char[] signature, short major, short minor, int id, char[] data) {
+        super(signature, major, minor, id);
+        this.data = data;
+        makeAcknowledgedIdFromData();
     }
 
-    protected static AcknowledgedMessage makeFromRaw(byte[] rawMessage) {
-        int id = parseIdFromRawMessageResponse(rawMessage);
-        int ackId = parseAcknowledgedIdFromRawMessageResponse(rawMessage);
-
-        return new AcknowledgedMessage(id, ackId);
+    @NonNull
+    public static AcknowledgedMessage newInstance(int acknowledgedId) {
+        int id = IdFactory.getInstance().next();
+        return new AcknowledgedMessage(SIGNATURE.toCharArray(), VERSION_MAJOR, VERSION_MINOR, id, acknowledgedId);
     }
 
-    private static int parseAcknowledgedIdFromRawMessageResponse(@NonNull byte[] message) {
-        int pos = datapos();
-        byte[] rawInt = Arrays.copyOfRange(message, pos, pos + DATA_LEN - 1);
-        String val = Arrays.toString(rawInt);
-        return Integer.valueOf(val);
+    private void makeAcknowledgedIdFromData() {
+        String val = Arrays.toString(data);
+        acknowledgedId = Integer.valueOf(val);
+    }
+
+    private void makeDataFromAcknowledgedId() {
+        data = new char[DATA_LEN];
+        data = String.format(Locale.ENGLISH, "%08d", acknowledgedId).toCharArray();
     }
 
     public int getAcknowledgedId() {
         return acknowledgedId;
-    }
-
-    @Override
-    protected byte[] id() {
-        return EndianessUtils.intToLittleEndianBytes(ourId);
-    }
-
-    @Override
-    protected byte[] data() {
-        byte[] res = new byte[DATA_LEN];
-        byte[] id = EndianessUtils.intToLittleEndianBytes(acknowledgedId);
-        Arrays.fill(res, 0, DATA_LEN - ID_LEN - 1, (byte) Character.MIN_VALUE);
-        System.arraycopy(id, 0, res, DATA_LEN - ID_LEN, ID_LEN);
-        return res;
     }
 
     @Override

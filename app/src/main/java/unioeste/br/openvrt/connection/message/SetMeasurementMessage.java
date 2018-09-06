@@ -1,8 +1,9 @@
 package unioeste.br.openvrt.connection.message;
 
 import android.support.annotation.NonNull;
-import unioeste.br.openvrt.connection.EndianessUtils;
 import unioeste.br.openvrt.connection.IdFactory;
+import unioeste.br.openvrt.connection.message.dictionary.Measurement;
+import unioeste.br.openvrt.connection.message.dictionary.Opcode;
 
 import java.util.Arrays;
 
@@ -13,47 +14,27 @@ public class SetMeasurementMessage extends Message {
 
     private Measurement measurement;
 
-    private int ourId;
-
-    public SetMeasurementMessage(Measurement measurement) {
-        this.ourId = IdFactory.getInstance().next();
+    public SetMeasurementMessage(char[] signature, short major, short minor, int id, Measurement measurement) {
+        super(signature, major, minor, id);
         this.measurement = measurement;
+        makeDataFromMeasurement();
     }
 
-    public SetMeasurementMessage(int ourId, Measurement measurement) {
-        this.ourId = ourId;
-        this.measurement = measurement;
+    @NonNull
+    public static SetMeasurementMessage newInstance(Measurement measurement) {
+        int id = IdFactory.getInstance().next();
+        return new SetMeasurementMessage(SIGNATURE.toCharArray(), VERSION_MAJOR, VERSION_MINOR, id, measurement);
     }
 
-    @Override
-    protected byte[] id() {
-        return EndianessUtils.intToLittleEndianBytes(ourId);
+    private void makeDataFromMeasurement() {
+        String measureStr = measurement.toString();
+        data = new char[DATA_LEN];
+        Arrays.fill(data, 0, DATA_LEN - measureStr.length() - 1, Character.MIN_VALUE);
+        System.arraycopy(measureStr.toCharArray(), 0, data, DATA_LEN - measureStr.length(), measureStr.length());
     }
 
-    @Override
-    protected byte[] data() {
-        byte[] strBytes = measurement.toBytes();
-        byte[] res = new byte[DATA_LEN];
-        Arrays.fill(res, 0, DATA_LEN - strBytes.length - 1, (byte) Character.MIN_VALUE);
-        System.arraycopy(strBytes, 0, res, DATA_LEN - strBytes.length, strBytes.length);
-        return res;
-    }
-
-    public enum Measurement {
-        KG_HA("KG_HA"), L_HA("L_HA");
-
-        public final int length = 2;
-
-        private final String code;
-
-        Measurement(final String code) {
-            this.code = code;
-        }
-
-        @NonNull
-        public final byte[] toBytes() {
-            return code.getBytes();
-        }
+    public Measurement getMeasurement() {
+        return measurement;
     }
 
     @Override

@@ -1,22 +1,26 @@
 package unioeste.br.openvrt.connection.message;
 
+import android.support.annotation.NonNull;
+import unioeste.br.openvrt.connection.IdFactory;
+import unioeste.br.openvrt.connection.message.dictionary.Opcode;
+
 /**
  * Signal that a message of id x was received and refused by the receiver.
  */
 public class RefusedMessage extends AcknowledgedMessage {
 
-    public RefusedMessage(int refusedId) {
-        super(refusedId);
+    public RefusedMessage(char[] signature, short major, short minor, int id, int acknowledgedId) {
+        super(signature, major, minor, id, acknowledgedId);
     }
 
-    public RefusedMessage(int ourId, int refusedId) {
-        super(ourId, refusedId);
+    public RefusedMessage(char[] signature, short major, short minor, int id, char[] data) {
+        super(signature, major, minor, id, data);
     }
 
-    protected static RefusedMessage makeFromRaw(byte[] rawMessage) {
-        AcknowledgedMessage msg = AcknowledgedMessage.makeFromRaw(rawMessage);
-
-        return (RefusedMessage) msg;
+    @NonNull
+    public static AcknowledgedMessage newInstance(int acknowledgedId) {
+        int id = IdFactory.getInstance().next();
+        return new RefusedMessage(SIGNATURE.toCharArray(), VERSION_MAJOR, VERSION_MINOR, id, acknowledgedId);
     }
 
     @Override

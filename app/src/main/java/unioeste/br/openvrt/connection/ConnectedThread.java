@@ -2,8 +2,10 @@ package unioeste.br.openvrt.connection;
 
 import android.support.annotation.NonNull;
 import unioeste.br.openvrt.connection.exception.InvalidMessageException;
+import unioeste.br.openvrt.connection.exception.UnexpectedMessageException;
 import unioeste.br.openvrt.connection.message.AcknowledgedMessage;
 import unioeste.br.openvrt.connection.message.Message;
+import unioeste.br.openvrt.connection.message.factory.MessageFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -72,13 +74,13 @@ public class ConnectedThread extends Thread {
 
     private void onMessageReceived(byte[] buffer) {
         try {
-            Message message = Message.makeFromResponse(buffer);
+            Message message = MessageFactory.make(buffer);
             if (message instanceof AcknowledgedMessage) {
                 outcomeMessageQueue.submitAck((AcknowledgedMessage) message);
             } else if (messageReceivedListener != null) {
                 messageReceivedListener.onMessageReceived(message);
             }
-        } catch (InvalidMessageException e) {
+        } catch (InvalidMessageException | UnexpectedMessageException e) {
             // TODO: Send refused message.
         }
     }
