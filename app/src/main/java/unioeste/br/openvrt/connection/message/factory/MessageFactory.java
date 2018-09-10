@@ -9,6 +9,8 @@ import unioeste.br.openvrt.connection.message.Message;
 import unioeste.br.openvrt.connection.message.RefusedMessage;
 import unioeste.br.openvrt.connection.message.dictionary.Opcode;
 
+import java.util.Objects;
+
 public class MessageFactory {
 
     private MessageFactory() {
@@ -28,21 +30,18 @@ public class MessageFactory {
         char[] data = makeDataFromBuffer(buf);
 
         if (!isValidSignature(signature)) {
-            System.out.println("INVALID SIGNATURE.");
             throw new InvalidMessageException();
         }
 
         if (!isValidVersion(major)) {
-            System.out.println("INVALID VERSION.");
             throw new InvalidMessageException();
         }
 
         if (!isValidOpcode(opcode)) {
-            System.out.println("INVALID OPCODE.");
             throw new InvalidMessageException();
         }
 
-        switch (Opcode.valueOf(String.valueOf(opcode))) {
+        switch (Objects.requireNonNull(Opcode.valueOf(opcode))) {
             case ACK_OP:
                 return new AcknowledgedMessage(signature, major, minor, id, data);
             case REFUSE_OP:
@@ -99,12 +98,6 @@ public class MessageFactory {
     }
 
     private static boolean isValidOpcode(byte opcode) {
-        for (Opcode c : Opcode.values()) {
-            if (c.code == opcode) {
-                return true;
-            }
-        }
-
-        return false;
+        return Opcode.valueOf(opcode) != null;
     }
 }
