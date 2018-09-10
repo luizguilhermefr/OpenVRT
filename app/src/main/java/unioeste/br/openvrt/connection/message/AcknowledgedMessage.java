@@ -4,7 +4,6 @@ import android.support.annotation.NonNull;
 import unioeste.br.openvrt.connection.IdFactory;
 import unioeste.br.openvrt.connection.message.dictionary.Opcode;
 
-import java.util.Arrays;
 import java.util.Locale;
 
 /**
@@ -34,7 +33,7 @@ public class AcknowledgedMessage extends Message {
     }
 
     private void makeAcknowledgedIdFromData() {
-        String val = Arrays.toString(data);
+        String val = new String(data);
         acknowledgedId = Integer.valueOf(val);
     }
 

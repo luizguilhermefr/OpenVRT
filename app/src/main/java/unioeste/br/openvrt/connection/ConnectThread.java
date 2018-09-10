@@ -9,7 +9,7 @@ import java.util.UUID;
 
 public class ConnectThread extends Thread {
 
-    private static final UUID CONN_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
+    private static final String UUID_KEY = "00001101-0000-1000-8000-00805F9B34FB";
 
     private OnConnectingListener connectingListener;
 
@@ -78,7 +78,8 @@ public class ConnectThread extends Thread {
     public void run() {
         onConnecting();
         try {
-            BluetoothSocket socket = device.createRfcommSocketToServiceRecord(ConnectThread.CONN_UUID);
+            UUID uuid = UUID.fromString(UUID_KEY);
+            BluetoothSocket socket = device.createRfcommSocketToServiceRecord(uuid);
             socket.connect();
             connectedThread = ConnectedThread.getInstance();
             connectedThread.setConnection(socket.getInputStream(), socket.getOutputStream());

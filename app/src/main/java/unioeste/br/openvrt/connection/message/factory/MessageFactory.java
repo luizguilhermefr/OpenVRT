@@ -9,8 +9,6 @@ import unioeste.br.openvrt.connection.message.Message;
 import unioeste.br.openvrt.connection.message.RefusedMessage;
 import unioeste.br.openvrt.connection.message.dictionary.Opcode;
 
-import java.util.Arrays;
-
 public class MessageFactory {
 
     private MessageFactory() {
@@ -29,7 +27,18 @@ public class MessageFactory {
         byte opcode = makeOpcodeFromBuffer(buf);
         char[] data = makeDataFromBuffer(buf);
 
-        if (!isValidSignature(signature) || !isValidVersion(major) || !isValidOpcode(opcode)) {
+        if (!isValidSignature(signature)) {
+            System.out.println("INVALID SIGNATURE.");
+            throw new InvalidMessageException();
+        }
+
+        if (!isValidVersion(major)) {
+            System.out.println("INVALID VERSION.");
+            throw new InvalidMessageException();
+        }
+
+        if (!isValidOpcode(opcode)) {
+            System.out.println("INVALID OPCODE.");
             throw new InvalidMessageException();
         }
 
@@ -46,7 +55,7 @@ public class MessageFactory {
     private static char[] makeSignatureFromBuffer(@NonNull byte[] buf) {
         byte[] signatureBuf = new byte[Message.SIGNATURE_LEN];
         System.arraycopy(buf, Message.signaturepos(), signatureBuf, 0, Message.SIGNATURE_LEN);
-        return Arrays.toString(signatureBuf).toCharArray();
+        return new String(signatureBuf).toCharArray();
     }
 
     private static short makeMajorFromBuffer(@NonNull byte[] buf) {
@@ -74,7 +83,7 @@ public class MessageFactory {
     private static char[] makeDataFromBuffer(@NonNull byte[] buf) {
         byte[] dataBuf = new byte[Message.DATA_LEN];
         System.arraycopy(buf, Message.datapos(), dataBuf, 0, Message.DATA_LEN);
-        return Arrays.toString(dataBuf).toCharArray();
+        return new String(dataBuf).toCharArray();
     }
 
     private static boolean isValidLength(@NonNull byte[] buf) {
@@ -82,7 +91,7 @@ public class MessageFactory {
     }
 
     private static boolean isValidSignature(@NonNull char[] signature) {
-        return Arrays.toString(signature).equals(Message.SIGNATURE);
+        return new String(signature).equals(Message.SIGNATURE);
     }
 
     private static boolean isValidVersion(short major) {
