@@ -1,5 +1,6 @@
 package unioeste.br.openvrt.connection;
 
+import android.support.annotation.NonNull;
 import unioeste.br.openvrt.connection.exception.MessageRefusedException;
 import unioeste.br.openvrt.connection.exception.MessageTimeoutException;
 import unioeste.br.openvrt.connection.message.AcknowledgedMessage;
@@ -92,10 +93,10 @@ public class OutcomeMessageQueue extends Thread {
         }
     }
 
-    synchronized void submitAck(AcknowledgedMessage ack) {
+    synchronized void submitAck(@NonNull AcknowledgedMessage ack) {
         ensureAckCapacity();
         acknowledgements.add(ack);
-        if (ack.getAcknowledgedId() == messageBeingProcessed.getId()) {
+        if (messageBeingProcessed != null && ack.getAcknowledgedId() == messageBeingProcessed.getId()) {
             interrupt();
         }
     }

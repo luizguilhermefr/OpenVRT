@@ -4,18 +4,16 @@ import android.support.annotation.NonNull;
 import unioeste.br.openvrt.connection.IdFactory;
 import unioeste.br.openvrt.connection.message.dictionary.Opcode;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.text.DecimalFormat;
+import java.util.Locale;
 
 /**
  * Inform to the applier what flow rate should be used.
  */
 public class SetRateMessage extends Message {
 
-    private BigDecimal rate;
+    private Float rate;
 
-    public SetRateMessage(char[] signature, short major, short minor, int id, BigDecimal rate) {
+    public SetRateMessage(char[] signature, short major, short minor, int id, Float rate) {
         super(signature, major, minor, id);
         this.rate = rate;
         makeDataFromRate();
@@ -24,14 +22,11 @@ public class SetRateMessage extends Message {
     @NonNull
     public static SetRateMessage newInstance(Float rate) {
         int id = IdFactory.getInstance().next();
-        BigDecimal bigDecimalRate = new BigDecimal(rate).setScale(2, BigDecimal.ROUND_FLOOR);
-        return new SetRateMessage(SIGNATURE.toCharArray(), VERSION_MAJOR, VERSION_MINOR, id, bigDecimalRate);
+        return new SetRateMessage(SIGNATURE.toCharArray(), VERSION_MAJOR, VERSION_MINOR, id, rate);
     }
 
     private void makeDataFromRate() {
-        DecimalFormat df = new DecimalFormat("000000.00");
-        df.setRoundingMode(RoundingMode.DOWN);
-        data = df.format(rate).replace(".", "").toCharArray();
+        data = String.format(Locale.ENGLISH, "%09.2f", rate).replace(".", "").toCharArray();
     }
 
 
