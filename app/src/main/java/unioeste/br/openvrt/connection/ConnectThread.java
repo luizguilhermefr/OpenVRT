@@ -71,7 +71,7 @@ public class ConnectThread extends Thread {
                     break;
             }
         });
-        connectedThread.write(handshakeMessage);
+        connectedThread.send(handshakeMessage);
     }
 
     @Override

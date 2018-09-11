@@ -17,4 +17,5 @@
     <string name="location_lost">Localização perdida</string>
     <string name="location_estabilished">Localização estabelecida</string>
     <string name="bad_accuracy">Baixa precisão de localização!</string>
+    <string name="communication_error">FATAL: Erro de comunicação!</string>
 </resources>

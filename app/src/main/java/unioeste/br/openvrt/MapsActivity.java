@@ -25,12 +25,16 @@ import com.google.maps.android.data.geojson.GeoJsonPolygon;
 import org.json.JSONException;
 import org.json.JSONObject;
 import unioeste.br.openvrt.connection.ConnectedThread;
+import unioeste.br.openvrt.connection.message.Message;
+import unioeste.br.openvrt.connection.message.SetRateMessage;
+import unioeste.br.openvrt.connection.message.dictionary.MessageResponse;
 import unioeste.br.openvrt.exception.InvalidOpenVRTGeoJsonException;
 import unioeste.br.openvrt.file.PrescriptionMapReader;
 import unioeste.br.openvrt.file.ProtocolDictionary;
 import unioeste.br.openvrt.map.FeatureStyler;
 import unioeste.br.openvrt.map.LayerValidator;
 
+import java.math.BigDecimal;
 import java.util.Objects;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback, LocationListener {
@@ -64,6 +68,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private Snackbar snackbar;
 
     private int selectedMeasurement;
+
+    private boolean applying = false;
 
     private void parseMapToJson(String mapStr) {
         try {
@@ -131,7 +137,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         return 0;
     }
 
-    private int getAccuracyColor(Float accuracy) {
+    private int getAccuracyColor(float accuracy) {
         if (accuracy < ACCURACY_OK) {
             return ContextCompat.getColor(getApplicationContext(), R.color.colorOk);
         } else if (accuracy < ACCURACY_WARN) {
@@ -141,12 +147,26 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         }
     }
 
-    private void onRateChanged(Float nextRate) {
+    private void onRateChanged(float nextRate) {
         String rateString = getString(R.string.current_rate, nextRate);
         runOnUiThread(() -> rateIndicator.setText(rateString));
+        if (applying) {
+            sendRateMessage(nextRate);
+        }
     }
 
-    private void onAccuracyChanged(Float nextAccuracy) {
+    private void sendRateMessage(float nextRate) {
+        BigDecimal rateDecimal = new BigDecimal(nextRate);
+        SetRateMessage nextRateMessage = SetRateMessage.newInstance(nextRate);
+        nextRateMessage.setResponseListener(response -> {
+            if (!response.equals(MessageResponse.ACK_POSITIVE)) {
+                onCannotSendMessage(nextRateMessage);
+            }
+        });
+        connectedThread.send(nextRateMessage);
+    }
+
+    private void onAccuracyChanged(float nextAccuracy) {
         String accuracyString = getString(R.string.current_precision, nextAccuracy);
         int accuracyColor = getAccuracyColor(nextAccuracy);
         runOnUiThread(() -> {
@@ -164,6 +184,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             int color = ContextCompat.getColor(getApplicationContext(), R.color.colorStop);
             fab.setBackgroundTintList(ColorStateList.valueOf(color));
             fab.setImageResource(R.drawable.close_circle);
+            applying = true;
         });
     }
 
@@ -173,7 +194,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             int color = ContextCompat.getColor(getApplicationContext(), R.color.colorAccent);
             fab.setBackgroundTintList(ColorStateList.valueOf(color));
             fab.setImageResource(R.drawable.send);
+            applying = false;
         });
+        sendRateMessage((float) 0);
     }
 
     private void askMeasurement() {
@@ -203,9 +226,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         runOnUiThread(() -> {
             snackbar.setDuration(Snackbar.LENGTH_LONG);
             snackbar.setText(getString(R.string.location_estabilished));
-            snackbar.setAction("", v -> {
-                // No action
-            });
+            snackbar.setAction(getString(R.string.ok), v -> snackbar.dismiss());
             snackbar.show();
         });
     }
@@ -214,9 +235,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         runOnUiThread(() -> {
             snackbar.setDuration(Snackbar.LENGTH_LONG);
             snackbar.setText(getString(R.string.location_lost));
-            snackbar.setAction("", v -> {
-                // No action
-            });
+            snackbar.setAction(getString(R.string.ok), v -> snackbar.dismiss());
             snackbar.show();
         });
     }
@@ -225,9 +244,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         runOnUiThread(() -> {
             snackbar.setDuration(Snackbar.LENGTH_INDEFINITE);
             snackbar.setText(getString(R.string.location_unavailable));
-            snackbar.setAction(getString(R.string.ok), v -> {
-                snackbar.dismiss();
-            });
+            snackbar.setAction(getString(R.string.ok), v -> snackbar.dismiss());
             snackbar.show();
         });
     }
@@ -236,9 +253,16 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         runOnUiThread(() -> {
             snackbar.setDuration(Snackbar.LENGTH_INDEFINITE);
             snackbar.setText(getString(R.string.bad_accuracy));
-            snackbar.setAction(getString(R.string.ok), v -> {
-                snackbar.dismiss();
-            });
+            snackbar.setAction(getString(R.string.ok), v -> snackbar.dismiss());
+            snackbar.show();
+        });
+    }
+
+    private void onCannotSendMessage(Message message) {
+        runOnUiThread(() -> {
+            snackbar.setDuration(Snackbar.LENGTH_LONG);
+            snackbar.setText(getString(R.string.communication_error));
+            snackbar.setAction(getString(R.string.retry), v -> connectedThread.send(message));
             snackbar.show();
         });
     }
@@ -246,6 +270,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        connectedThread = ConnectedThread.getInstance();
         Intent intent = getIntent();
         mapLocation = intent.getStringExtra("map");
         setContentView(R.layout.activity_maps);

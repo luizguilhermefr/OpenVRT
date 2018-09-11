@@ -33,7 +33,7 @@ public class ConnectedThread extends Thread {
         //
     }
 
-    static ConnectedThread getInstance() {
+    public static ConnectedThread getInstance() {
         if (instance == null) {
             instance = new ConnectedThread();
         }
@@ -132,7 +132,7 @@ public class ConnectedThread extends Thread {
         }
     }
 
-    void write(Message message) {
+    public void send(Message message) {
         outcomeMessageQueue.add(message);
     }
 

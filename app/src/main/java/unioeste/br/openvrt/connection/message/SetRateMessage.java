@@ -22,9 +22,10 @@ public class SetRateMessage extends Message {
     }
 
     @NonNull
-    public static SetRateMessage newInstance(BigDecimal rate) {
+    public static SetRateMessage newInstance(Float rate) {
         int id = IdFactory.getInstance().next();
-        return new SetRateMessage(SIGNATURE.toCharArray(), VERSION_MAJOR, VERSION_MINOR, id, rate);
+        BigDecimal bigDecimalRate = new BigDecimal(rate).setScale(2, BigDecimal.ROUND_FLOOR);
+        return new SetRateMessage(SIGNATURE.toCharArray(), VERSION_MAJOR, VERSION_MINOR, id, bigDecimalRate);
     }
 
     private void makeDataFromRate() {
