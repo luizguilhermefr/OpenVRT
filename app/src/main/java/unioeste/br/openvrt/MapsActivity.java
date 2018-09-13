@@ -45,7 +45,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     private static final float ACCURACY_OK = 10;
 
-    private static final float ACCURACY_WARN = 25;
+    private static final float ACCURACY_WARN = 20;
 
     private GoogleMap googleMap;
 
