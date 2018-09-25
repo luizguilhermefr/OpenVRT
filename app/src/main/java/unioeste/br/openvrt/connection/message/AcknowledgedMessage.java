@@ -14,7 +14,7 @@ public class AcknowledgedMessage extends Message {
 
     private int acknowledgedId;
 
-    public AcknowledgedMessage(char[] signature, short major, short minor, int id, int acknowledgedId) {
+    AcknowledgedMessage(char[] signature, short major, short minor, int id, int acknowledgedId) {
         super(signature, major, minor, id);
         this.acknowledgedId = acknowledgedId;
         makeDataFromAcknowledgedId();

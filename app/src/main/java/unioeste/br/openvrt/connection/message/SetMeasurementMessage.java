@@ -14,14 +14,14 @@ public class SetMeasurementMessage extends Message {
 
     private Measurement measurement;
 
-    public SetMeasurementMessage(char[] signature, short major, short minor, int id, Measurement measurement) {
+    private SetMeasurementMessage(char[] signature, short major, short minor, int id, Measurement measurement) {
         super(signature, major, minor, id);
         this.measurement = measurement;
         makeDataFromMeasurement();
     }
 
     @NonNull
-    public static SetMeasurementMessage newInstance(Measurement measurement) {
+    public static SetMeasurementMessage newInstance(@NonNull Measurement measurement) {
         int id = IdFactory.getInstance().next();
         return new SetMeasurementMessage(SIGNATURE.toCharArray(), VERSION_MAJOR, VERSION_MINOR, id, measurement);
     }

@@ -5,6 +5,7 @@ import unioeste.br.openvrt.connection.exception.InvalidMessageException;
 import unioeste.br.openvrt.connection.exception.UnexpectedMessageException;
 import unioeste.br.openvrt.connection.message.AcknowledgedMessage;
 import unioeste.br.openvrt.connection.message.Message;
+import unioeste.br.openvrt.connection.message.RefusedMessage;
 import unioeste.br.openvrt.connection.message.factory.MessageFactory;
 
 import java.io.IOException;
@@ -80,8 +81,12 @@ public class ConnectedThread extends Thread {
             } else if (messageReceivedListener != null) {
                 messageReceivedListener.onMessageReceived(message);
             }
-        } catch (InvalidMessageException | UnexpectedMessageException e) {
-            // TODO: Send refused message.
+        } catch (InvalidMessageException ignored) {
+            // Cannot do nothing because an invalid message doesnt have a
+            // valid ID to refuse.
+        } catch (UnexpectedMessageException e) {
+            RefusedMessage message = RefusedMessage.newInstance(e.getMessageId());
+            send(message);
         }
     }
 

@@ -19,4 +19,5 @@
     <string name="location_estabilished">Location estabilished</string>
     <string name="bad_accuracy">Bad location accuracy!</string>
     <string name="communication_error">FATAL: Communication error!</string>
+    <string name="io_error">Invalid or unreadable file!</string>
 </resources>

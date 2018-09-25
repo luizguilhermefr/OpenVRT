@@ -10,7 +10,7 @@ import unioeste.br.openvrt.connection.message.dictionary.Opcode;
  */
 public class HandshakeMessage extends Message {
 
-    public HandshakeMessage(char[] signature, short major, short minor, int id) {
+    private HandshakeMessage(char[] signature, short major, short minor, int id) {
         super(signature, major, minor, id);
         this.data = emptyData();
     }

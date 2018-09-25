@@ -11,16 +11,16 @@ import java.util.Locale;
  */
 public class SetRateMessage extends Message {
 
-    private Float rate;
+    private float rate;
 
-    public SetRateMessage(char[] signature, short major, short minor, int id, Float rate) {
+    private SetRateMessage(char[] signature, short major, short minor, int id, float rate) {
         super(signature, major, minor, id);
         this.rate = rate;
         makeDataFromRate();
     }
 
     @NonNull
-    public static SetRateMessage newInstance(Float rate) {
+    public static SetRateMessage newInstance(float rate) {
         int id = IdFactory.getInstance().next();
         return new SetRateMessage(SIGNATURE.toCharArray(), VERSION_MAJOR, VERSION_MINOR, id, rate);
     }

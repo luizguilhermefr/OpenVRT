@@ -48,7 +48,7 @@ public class MessageFactory {
                 return new RefusedMessage(signature, major, minor, id, data);
         }
 
-        throw new UnexpectedMessageException();
+        throw new UnexpectedMessageException(id);
     }
 
     private static char[] makeSignatureFromBuffer(@NonNull byte[] buf) {

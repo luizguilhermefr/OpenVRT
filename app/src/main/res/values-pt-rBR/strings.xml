@@ -18,4 +18,5 @@
     <string name="location_estabilished">Localização estabelecida</string>
     <string name="bad_accuracy">Baixa precisão de localização!</string>
     <string name="communication_error">FATAL: Erro de comunicação!</string>
+    <string name="io_error">Arquivo inválido ou ilegível!</string>
 </resources>

@@ -26,7 +26,9 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import unioeste.br.openvrt.connection.ConnectedThread;
 import unioeste.br.openvrt.connection.message.Message;
+import unioeste.br.openvrt.connection.message.SetMeasurementMessage;
 import unioeste.br.openvrt.connection.message.SetRateMessage;
+import unioeste.br.openvrt.connection.message.dictionary.Measurement;
 import unioeste.br.openvrt.connection.message.dictionary.MessageResponse;
 import unioeste.br.openvrt.exception.InvalidOpenVRTGeoJsonException;
 import unioeste.br.openvrt.file.PrescriptionMapReader;
@@ -35,6 +37,8 @@ import unioeste.br.openvrt.map.FeatureStyler;
 import unioeste.br.openvrt.map.LayerValidator;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Objects;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback, LocationListener {
@@ -67,24 +71,23 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     private Snackbar snackbar;
 
-    private int selectedMeasurement;
+    private Measurement selectedMeasurement;
 
     private boolean applying = false;
 
     private void parseMapToJson(String mapStr) {
         try {
-            JSONObject mapContent = new JSONObject(mapStr);
-            addMapLayerToMap(mapContent);
+            JSONObject geoJson = new JSONObject(mapStr);
+            addMapLayerToMap(geoJson);
         } catch (JSONException | InvalidOpenVRTGeoJsonException e) {
-            // TODO: Show error on cannot parse as JSON
-            e.printStackTrace();
+            onFileParseError(e);
         }
     }
 
     private void openFile() {
         PrescriptionMapReader mapReader = new PrescriptionMapReader(mapLocation);
         mapReader.setOnFileReadListener(this::parseMapToJson);
-        mapReader.setOnIOExceptionListener(Throwable::printStackTrace); // TODO: Show error on cannot open file
+        mapReader.setOnIOExceptionListener(this::onFileParseError);
         Thread mapReaderThread = new Thread(mapReader);
         mapReaderThread.start();
     }
@@ -179,6 +182,18 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
     private void setApplying() {
+        SetMeasurementMessage nextMeasurementMessage = SetMeasurementMessage.newInstance(selectedMeasurement);
+        nextMeasurementMessage.setResponseListener(response -> {
+            if (!response.equals(MessageResponse.ACK_POSITIVE)) {
+                onCannotSendMessage(nextMeasurementMessage);
+            } else {
+                onApplying();
+            }
+        });
+        connectedThread.send(nextMeasurementMessage);
+    }
+
+    private void onApplying() {
         runOnUiThread(() -> {
             fab.setOnClickListener(v -> setNotApplying());
             int color = ContextCompat.getColor(getApplicationContext(), R.color.colorStop);
@@ -200,9 +215,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
     private void askMeasurement() {
+        selectedMeasurement = Measurement.fromIndex(0, getApplicationContext());
+        HashMap<Measurement, String> measurementsMap = Measurement.translationMap(getApplicationContext());
+        ArrayList<String> measurementsList = new ArrayList<>(measurementsMap.values());
         AlertDialog.Builder measurementDialogBuilder = new AlertDialog.Builder(this);
         measurementDialogBuilder.setTitle(R.string.rate_measurement);
-        measurementDialogBuilder.setSingleChoiceItems(R.array.measurements, 0, (dialogInterface, i) -> selectedMeasurement = i);
+        measurementDialogBuilder.setSingleChoiceItems(measurementsList.toArray(new String[0]), 0, (dialogInterface, i) -> selectedMeasurement = Measurement.fromIndex(i, getApplicationContext()));
         measurementDialogBuilder.setPositiveButton(R.string.ok, (dialog, id) -> setApplying());
         measurementDialogBuilder.setNegativeButton(R.string.cancel, (dialog, id
         ) -> setNotApplying());
@@ -263,6 +281,16 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             snackbar.setDuration(Snackbar.LENGTH_LONG);
             snackbar.setText(getString(R.string.communication_error));
             snackbar.setAction(getString(R.string.retry), v -> connectedThread.send(message));
+            snackbar.show();
+        });
+    }
+
+    private void onFileParseError(Exception e) {
+        e.printStackTrace();
+        runOnUiThread(() -> {
+            snackbar.setDuration(Snackbar.LENGTH_LONG);
+            snackbar.setText(getString(R.string.io_error));
+            snackbar.setAction(getString(R.string.ok), v -> snackbar.dismiss());
             snackbar.show();
         });
     }

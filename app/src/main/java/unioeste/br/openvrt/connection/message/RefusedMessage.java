@@ -18,7 +18,7 @@ public class RefusedMessage extends AcknowledgedMessage {
     }
 
     @NonNull
-    public static AcknowledgedMessage newInstance(int acknowledgedId) {
+    public static RefusedMessage newInstance(int acknowledgedId) {
         int id = IdFactory.getInstance().next();
         return new RefusedMessage(SIGNATURE.toCharArray(), VERSION_MAJOR, VERSION_MINOR, id, acknowledgedId);
     }
