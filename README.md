@@ -6,7 +6,10 @@ It consists of an embedded system like [Arduino](https://github.com/luizguilherm
 
 The App must be fed with a GeoJSON *prescription map*, that will have the application grid for the tillage.
 
-*Soon, the complete docs!*
+## Related Projects
+
+- [OpenVRT Visualizer](https://github.com/luizguilhermefr/OpenVRT-Visualizer) - A software that allow you to inspect the prescription maps directly from computer.
+- [OpenVRT Firmware](https://github.com/luizguilhermefr/OpenVRT-Firmware) - A firmware example, using a treadmill to simulate the actuator and a potentiometer to simulate the offset speed.
 
 ## Credits
 
