@@ -6,6 +6,8 @@ It consists of an embedded system like [Arduino](https://github.com/luizguilherm
 
 The App must be fed with a GeoJSON *prescription map*, that will have the application grid for the tillage.
 
+- [Watch the video](https://www.youtube.com/watch?v=W3I2XYizy-U)
+
 ## Related Projects
 
 - [OpenVRT Visualizer](https://github.com/luizguilhermefr/OpenVRT-Visualizer) - A software that allow you to inspect the prescription maps directly from computer.
