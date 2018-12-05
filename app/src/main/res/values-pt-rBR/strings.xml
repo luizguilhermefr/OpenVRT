@@ -22,4 +22,5 @@
     <string name="work_width">Largura de trabalho (m)</string>
     <string name="next">Próximo</string>
     <string name="validation_error">Por favor, selecione uma largura de trabalho válida e uma medida de aplicação</string>
+    <string name="preparing">Preparando para aplicação...</string>
 </resources>

@@ -23,4 +23,5 @@
     <string name="work_width">Work width (m)</string>
     <string name="next">Next</string>
     <string name="validation_error">Please, select a valid work width and measurement</string>
+    <string name="preparing">Preparing for application…</string>
 </resources>

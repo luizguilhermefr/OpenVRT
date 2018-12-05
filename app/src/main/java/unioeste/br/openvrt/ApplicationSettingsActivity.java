@@ -95,6 +95,7 @@ public class ApplicationSettingsActivity extends AppCompatActivity {
     }
 
     private void sendWorkWidthMessage() {
+        onSendingMessages();
         SetWorkWidthMessage nextWorkWidthMessage = SetWorkWidthMessage.newInstance(workWidth);
         nextWorkWidthMessage.setResponseListener(workWidthResponse -> {
             if (!workWidthResponse.equals(MessageResponse.ACK_POSITIVE)) {
@@ -111,6 +112,16 @@ public class ApplicationSettingsActivity extends AppCompatActivity {
             snackbar.setDuration(Snackbar.LENGTH_LONG);
             snackbar.setText(getString(R.string.communication_error));
             snackbar.setAction(getString(R.string.retry), v -> connectedThread.send(message));
+            snackbar.show();
+        });
+    }
+
+    private void onSendingMessages() {
+        runOnUiThread(() -> {
+            snackbar.setText(R.string.preparing);
+            snackbar.setAction("", v -> {
+                // No action
+            });
             snackbar.show();
         });
     }
