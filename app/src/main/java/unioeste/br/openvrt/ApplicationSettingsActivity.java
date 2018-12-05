@@ -126,6 +126,10 @@ public class ApplicationSettingsActivity extends AppCompatActivity {
         });
     }
 
+    private void makeSnackbar() {
+        snackbar = Snackbar.make(findViewById(R.id.settings), "", Snackbar.LENGTH_LONG);
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -136,5 +140,6 @@ public class ApplicationSettingsActivity extends AppCompatActivity {
         measurementButton = findViewById(R.id.measurement_button);
         validationText = findViewById(R.id.validation_text);
         workWidthEditText = findViewById(R.id.work_width_edit_text);
+        makeSnackbar();
     }
 }
