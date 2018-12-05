@@ -1,7 +1,6 @@
 package unioeste.br.openvrt;
 
 import android.annotation.SuppressLint;
-import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.ColorStateList;
@@ -26,9 +25,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import unioeste.br.openvrt.connection.ConnectedThread;
 import unioeste.br.openvrt.connection.message.Message;
-import unioeste.br.openvrt.connection.message.SetMeasurementMessage;
 import unioeste.br.openvrt.connection.message.SetRateMessage;
-import unioeste.br.openvrt.connection.message.dictionary.Measurement;
 import unioeste.br.openvrt.connection.message.dictionary.MessageResponse;
 import unioeste.br.openvrt.exception.InvalidOpenVRTGeoJsonException;
 import unioeste.br.openvrt.file.PrescriptionMapReader;
@@ -37,8 +34,6 @@ import unioeste.br.openvrt.map.FeatureStyler;
 import unioeste.br.openvrt.map.LayerValidator;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Objects;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback, LocationListener {
@@ -70,8 +65,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private FloatingActionButton fab;
 
     private Snackbar snackbar;
-
-    private Measurement selectedMeasurement;
 
     private boolean applying = false;
 
@@ -181,18 +174,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         });
     }
 
-    private void setApplying() {
-        SetMeasurementMessage nextMeasurementMessage = SetMeasurementMessage.newInstance(selectedMeasurement);
-        nextMeasurementMessage.setResponseListener(response -> {
-            if (!response.equals(MessageResponse.ACK_POSITIVE)) {
-                onCannotSendMessage(nextMeasurementMessage);
-            } else {
-                onApplying();
-            }
-        });
-        connectedThread.send(nextMeasurementMessage);
-    }
-
     private void onApplying() {
         runOnUiThread(() -> {
             fab.setOnClickListener(v -> setNotApplying());
@@ -205,7 +186,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     private void setNotApplying() {
         runOnUiThread(() -> {
-            fab.setOnClickListener(v -> askMeasurement());
+            fab.setOnClickListener(v -> onApplying());
             int color = ContextCompat.getColor(getApplicationContext(), R.color.colorAccent);
             fab.setBackgroundTintList(ColorStateList.valueOf(color));
             fab.setImageResource(R.drawable.send);
@@ -214,23 +195,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         sendRateMessage((float) 0);
     }
 
-    private void askMeasurement() {
-        selectedMeasurement = Measurement.fromIndex(0, getApplicationContext());
-        HashMap<Measurement, String> measurementsMap = Measurement.translationMap(getApplicationContext());
-        ArrayList<String> measurementsList = new ArrayList<>(measurementsMap.values());
-        AlertDialog.Builder measurementDialogBuilder = new AlertDialog.Builder(this);
-        measurementDialogBuilder.setTitle(R.string.rate_measurement);
-        measurementDialogBuilder.setSingleChoiceItems(measurementsList.toArray(new String[0]), 0, (dialogInterface, i) -> selectedMeasurement = Measurement.fromIndex(i, getApplicationContext()));
-        measurementDialogBuilder.setPositiveButton(R.string.ok, (dialog, id) -> setApplying());
-        measurementDialogBuilder.setNegativeButton(R.string.cancel, (dialog, id
-        ) -> setNotApplying());
-        measurementDialogBuilder.create().show();
-    }
-
     private void createFloatingActionButton() {
         runOnUiThread(() -> {
             fab = findViewById(R.id.start_fab);
-            fab.setOnClickListener(v -> askMeasurement());
+            fab.setOnClickListener(v -> onApplying());
             fab.bringToFront();
             fab.setVisibility(FloatingActionButton.VISIBLE);
         });

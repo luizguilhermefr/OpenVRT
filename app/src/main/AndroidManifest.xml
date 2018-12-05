@@ -38,13 +38,12 @@
 
         <activity
             android:name=".MapsActivity"
-            android:label="@string/app_name">
-
-        </activity>
+            android:label="@string/app_name"></activity>
         <activity
             android:name=".SelectShapeActivity"
             android:label="@string/app_name" />
         <activity android:name=".SelectDeviceActivity" />
+        <activity android:name=".ApplicationSettingsActivity"></activity>
     </application>
 
 </manifest>

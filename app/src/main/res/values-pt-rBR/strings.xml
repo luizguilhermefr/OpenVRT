@@ -19,4 +19,7 @@
     <string name="bad_accuracy">Baixa precisão de localização!</string>
     <string name="communication_error">FATAL: Erro de comunicação!</string>
     <string name="io_error">Arquivo inválido ou ilegível!</string>
+    <string name="work_width">Largura de trabalho (m)</string>
+    <string name="next">Próximo</string>
+    <string name="validation_error">Por favor, selecione uma largura de trabalho válida e uma medida de aplicação</string>
 </resources>

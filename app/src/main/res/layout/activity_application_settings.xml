@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context=".ApplicationSettingsActivity">
+
+
+    <EditText
+        android:id="@+id/work_width_edit_text"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/text_margin"
+        android:ems="10"
+        android:hint="@string/work_width"
+        android:inputType="numberDecimal" />
+
+    <Button
+        android:id="@+id/measurement_button"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/text_margin"
+        android:onClick="askMeasurement"
+        android:text="@string/rate_measurement" />
+
+    <TextView
+        android:id="@+id/validation_text"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/text_margin"
+        android:text="@string/validation_error"
+        android:textAlignment="center"
+        android:textColor="@color/colorDanger"
+        android:visibility="invisible" />
+
+    <LinearLayout
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:gravity="center|bottom">
+
+        <Button
+            android:id="@+id/go_to_map_button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:onClick="onPressNext"
+            android:text="@string/next" />
+    </LinearLayout>
+</LinearLayout>

@@ -22,8 +22,8 @@ public class SelectDeviceActivity extends AppCompatActivity implements SelectDev
 
     private String mapLocation;
 
-    private void toMapsActivity() {
-        Intent intent = new Intent(this, MapsActivity.class);
+    private void toSettingsActivity() {
+        Intent intent = new Intent(this, ApplicationSettingsActivity.class);
         intent.putExtra("map", mapLocation);
         startActivity(intent);
     }
@@ -50,7 +50,7 @@ public class SelectDeviceActivity extends AppCompatActivity implements SelectDev
             snackbar.dismiss();
             selectDeviceFragment.unlockList();
         });
-        toMapsActivity();
+        toSettingsActivity();
     }
 
     private void onConnectionError() {

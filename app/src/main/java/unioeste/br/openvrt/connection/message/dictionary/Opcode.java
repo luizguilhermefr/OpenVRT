@@ -5,7 +5,8 @@ public enum Opcode {
     ACK_OP((byte) 0x1),
     HANDSHAKE((byte) 0x2),
     RATE_SET((byte) 0x3),
-    MEASURE_SET((byte) 0x4);
+    MEASURE_SET((byte) 0x4),
+    WORK_WIDTH_SET((byte) 0x5);
 
     public final byte code;
 
